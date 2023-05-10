@@ -7,6 +7,7 @@
         public string Description { get; set; }
         public double Price { get; set; }
         public long SellerId { get; set; }
+        public User Seller { get; set; }
         public int MaxQuantity { get; set; }
         public string PhotoUrl { get; set; }
     }
