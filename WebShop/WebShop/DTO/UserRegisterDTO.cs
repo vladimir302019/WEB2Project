@@ -5,7 +5,6 @@ namespace WebShop.DTO
 {
     public class UserRegisterDTO
     {
-        [Required]
         public long Id { get; set; }
         [Required]
         public string FullName { get; set; }

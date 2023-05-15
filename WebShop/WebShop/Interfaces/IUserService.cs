@@ -7,7 +7,8 @@ namespace WebShop.Interfaces
     {
         TokenDTO Login(UserLoginDTO user);
         UserDTO Register(UserRegisterDTO user);
-        List<User> GetAllUsers();
+        List<UserDTO> GetAllUsers();
+        List<UserDTO> GetAllUnactivatedUsers();
         UserRegisterDTO GetUser(long id);
         UserRegisterDTO UpdateUser(long id,UserRegisterDTO user);
         UserDTO ActivateUser(long id);
