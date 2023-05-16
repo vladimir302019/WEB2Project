@@ -76,9 +76,6 @@ namespace WebShop.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<bool>("Approved")
-                        .HasColumnType("bit");
-
                     b.Property<long>("BuyerId")
                         .HasColumnType("bigint");
 
@@ -218,7 +215,7 @@ namespace WebShop.Migrations
                     b.HasOne("WebShop.Models.Order", "Order")
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Article");

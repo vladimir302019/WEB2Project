@@ -9,10 +9,10 @@ namespace WebShop.Interfaces
         OrderAllDTO GetOrder(long orderId);
         List<OrderAdminDTO> GetOrders();
         List<OrderAllDTO> GetUndeliveredOrders(long userId);
-        List<OrderAllDTO> GetUnapprovedOrders(long userId);
+        List<OrderAllDTO> GetNewOrders(long userId);
+        List<OrderAllDTO> GetOldOrders(long userId);
         List<OrderAllDTO> GetOrders(long userId);
         List<OrderItemDTO> GetOrderedItems(long sellerId);
-        bool ConfirmOrder(long orderId);
         bool CancelOrder(long orderId);
 
     }

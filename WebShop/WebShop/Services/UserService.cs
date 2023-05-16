@@ -96,10 +96,7 @@ namespace WebShop.Services
                 string tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
                 return new TokenDTO()
                 {
-                    Token = tokenString,
-                    Role = user1.type.ToString(),
-                    UserId = user1.Id,
-                    Active = user1.Approved
+                    Token = tokenString
                 };
             }
             else return null;
@@ -112,14 +109,17 @@ namespace WebShop.Services
             
             User newUser = _mapper.Map<User>(user);
             newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
-            
-            if (newUser.type.ToString() == "Seller") {
+
+            if (newUser.type.ToString() == "Seller")
+            {
                 newUser.Approved = false;
                 newUser.Articles = new List<Article>();
-            }else newUser.Approved = true;
-
-            newUser.Orders = new List<Order>();
-
+            }
+            else
+            {
+                newUser.Approved = true;
+                newUser.Orders = new List<Order>();
+            }
             _webShopDbContext.Users.Add(newUser);
             _webShopDbContext.SaveChanges();
 

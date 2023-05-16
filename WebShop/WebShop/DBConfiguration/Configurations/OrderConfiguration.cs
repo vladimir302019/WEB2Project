@@ -13,11 +13,6 @@ namespace WebShop.DBConfiguration.Configurations
 
             builder.Property(x => x.Address).HasMaxLength(100).IsRequired();
             builder.Property(x => x.Comment).HasMaxLength(200);
-
-            builder.HasMany(order => order.OrderItems)
-                .WithOne(orderItem => orderItem.Order)
-                .HasForeignKey(orderItem => orderItem.OrderId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

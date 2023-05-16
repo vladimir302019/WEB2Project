@@ -11,6 +11,12 @@ namespace WebShop.DBConfiguration.Configurations
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
+            builder.HasOne(x => x.Order)
+                .WithMany(x => x.OrderItems)
+                .HasForeignKey(x => x.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //builder.HasOne(x => x.Article);
         }
     }
 }

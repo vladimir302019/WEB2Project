@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "UPXKHbxGAnRDcSD6UVsgQS8YI3aHdQGZcPzfp2MbA1QtkSa9knhmOPkht9n6Q6DpqgHboo74fNIzj9MHXuWCZw==",
+  "dgSpecHash": "ut6ZWi/otohZxbuy0VmcYJeAN7GA5niqp2kJF+ywYVyoXkQTy2fq875OVY76KDPYjLGLH+QFvJHpX7QVd7oWfQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Vladimir\\OneDrive - Univerzitet u Novom Sadu\\Desktop\\faks\\CETVRTA\\LETNJI\\web2projekat\\WebShop\\WebShop\\WebShop.csproj",
+  "projectFilePath": "C:\\Users\\Vladimir\\OneDrive - Univerzitet u Novom Sadu\\Desktop\\web2proj\\WEB2Project\\WebShop\\WebShop\\WebShop.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Vladimir\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
     "C:\\Users\\Vladimir\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
