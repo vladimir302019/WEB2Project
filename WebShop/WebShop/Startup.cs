@@ -16,6 +16,9 @@ using System.Threading.Tasks;
 using AutoMapper;
 using WebShop.Mapping;
 using WebShop.EmailService;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace WebShop
 {
@@ -36,13 +39,59 @@ namespace WebShop
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebShop", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme 
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "bearer"
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[]{}
+                    }
+                });
+
             });
+
             services.AddDbContext<WebShopDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("WebShopContext")));
 
             var mapperConfig = new MapperConfiguration(mc =>
             {
                 mc.AddProfile(new MappingProfile());
             });
+
+            // Authentication scheme
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = "https://localhost:44370",
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecretKey"]))
+                    };
+                });
+
+            services.AddAuthorization();
 
             // Allow CORS
             services.AddCors(options =>
@@ -61,7 +110,6 @@ namespace WebShop
             services.AddSingleton(emailConfig);
             services.AddScoped<IEmailService, EmailService.EmailService>();
 
-
             // AutoMapper
             IMapper mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
@@ -78,9 +126,11 @@ namespace WebShop
             }
 
             app.UseHttpsRedirection();
+            app.UseCors(_cors);
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
