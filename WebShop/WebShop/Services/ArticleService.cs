@@ -3,70 +3,86 @@ using WebShop.DBConfiguration;
 using WebShop.DTO;
 using WebShop.Interfaces;
 using WebShop.Models;
+using WebShop.Repositories.IRepositories;
 
 namespace WebShop.Services
 {
     public class ArticleService : IArticleService
     {
         private readonly IMapper _mapper;
-        private readonly WebShopDbContext _webShopDbContext;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ArticleService(IMapper mapper, WebShopDbContext webShopDbContext)
+        public ArticleService(IMapper mapper, IUnitOfWork unit)
         {
             _mapper = mapper;
-            _webShopDbContext = webShopDbContext;
+            _unitOfWork = unit;
         }
 
-        public ArticleDTO AddNewArticle(ArticleDTO newArticle)
+        public async Task<ArticleDTO> AddNewArticle(ArticleDTO newArticle, long sellerId)
         {
-            var article = _webShopDbContext.Articles.FirstOrDefault(a => a.Name == newArticle.Name);
+            List<Article> list = await _unitOfWork.ArticleRepository.GetAll();
+            var article = list.Find(a => a.Name == newArticle.Name);
             if (article != null) { return null; }
 
-            _webShopDbContext.Articles.Add(_mapper.Map<Article>(newArticle));
-            _webShopDbContext.SaveChanges();
-            return _mapper.Map<ArticleDTO>(newArticle);
+            var seller = await _unitOfWork.UserRepository.GetById(sellerId);
+            if (seller == null) { return null; }
+
+            article = _mapper.Map<Article>(newArticle);
+            article.Seller = seller;
+            article.SellerId = sellerId;
+            seller.Articles.Add(article);
+
+            _unitOfWork.UserRepository.UpdateUser(seller);
+            await _unitOfWork.ArticleRepository.InsertArticle(article);
+            await _unitOfWork.Save();
+            return _mapper.Map<ArticleDTO>(article);
         }
 
-        public bool DeleteArticle(long id)
+        public async Task<bool> DeleteArticle(long id)
         {
-            var article = _webShopDbContext.Articles.Find(id);
+            var article = await _unitOfWork.ArticleRepository.GetById(id);
             if (article == null) { return false; }
             else
             {
-                _webShopDbContext.Articles.Remove(article);
-                _webShopDbContext.SaveChanges();
+                var seller = await _unitOfWork.UserRepository.GetById(article.SellerId);
+                seller.Articles.Remove(article);
+                _unitOfWork.UserRepository.UpdateUser(seller);
+
+                _unitOfWork.ArticleRepository.DeleteArticle(article.Id);
+                await _unitOfWork.Save();
                 return true;
             }
         }
 
-        public List<ArticleDTO> GetAllArticles()
+        public async Task<List<ArticleDTO>> GetAllArticles()
         {
-            return _mapper.Map<List<ArticleDTO>>(_webShopDbContext.Articles);
+            return _mapper.Map<List<ArticleDTO>>(await _unitOfWork.ArticleRepository.GetAll());
         }
 
-        public ArticleDTO GetArticle(long id)
+        public async Task<ArticleDTO> GetArticle(long id)
         {
-            var article = _webShopDbContext.Articles.Find(id);
+            var article = await _unitOfWork.ArticleRepository.GetById(id);
             if(article == null) { return null; }
             else return _mapper.Map<ArticleDTO>(article);
         }
 
-        public ArticleDTO UpdateArticle(long id, ArticleDTO newArticle)
+        public async Task<ArticleDTO> UpdateArticle(long id, ArticleDTO newArticle)
         {
-            var article = _webShopDbContext.Articles.Find(id);
+            var article = await _unitOfWork.ArticleRepository.GetById(id);
             if (article == null) { return null; }
-            else
-            {
-                article.Name = newArticle.Name;
-                article.Description = newArticle.Description;
-                article.Price = newArticle.Price;
-                article.MaxQuantity = newArticle.MaxQuantity;
-                article.PhotoUrl = newArticle.PhotoUrl;
 
-                _webShopDbContext.SaveChanges();
-                return _mapper.Map<ArticleDTO>(article);
-            }
+            article = _mapper.Map<Article>(newArticle);
+            /*
+            var seller = await _unitOfWork.UserRepository.GetById(article.SellerId);
+            var art = seller.Articles.Find(x => x.Id == article.Id);
+            seller.Articles.Remove(art);
+            art = article;
+            seller.Articles.Add(art);
 
+            _unitOfWork.UserRepository.UpdateUser(seller);*/
+            _unitOfWork.ArticleRepository.UpdateArticle(article);
+            await _unitOfWork.Save();
+            return _mapper.Map<ArticleDTO>(article);
         }
     }
 }

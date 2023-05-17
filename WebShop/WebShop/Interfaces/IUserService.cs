@@ -5,12 +5,12 @@ namespace WebShop.Interfaces
 {
     public interface IUserService
     {
-        TokenDTO Login(UserLoginDTO user);
-        UserDTO Register(UserRegisterDTO user);
-        List<UserDTO> GetAllUsers();
-        List<UserDTO> GetAllUnactivatedUsers();
-        UserRegisterDTO GetUser(long id);
-        UserRegisterDTO UpdateUser(long id,UserRegisterDTO user);
-        UserDTO ActivateUser(long id);
+        Task<TokenDTO> Login(UserLoginDTO user);
+        Task<UserDTO> Register(UserRegisterDTO user);
+        Task<List<UserDTO>> GetAllUsers();
+        Task<List<UserDTO>> GetAllUnactivatedUsers();
+        Task<UserRegisterDTO> GetUser(long id);
+        Task<UserRegisterDTO> UpdateUser(long id,UserRegisterDTO user);
+        Task<UserDTO> ActivateUser(long id, bool activate);
     }
 }

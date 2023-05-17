@@ -8,63 +8,74 @@ using WebShop.DTO;
 using WebShop.EmailService;
 using WebShop.Interfaces;
 using WebShop.Models;
+using WebShop.Repositories.IRepositories;
 
 namespace WebShop.Services
 {
     public class UserService : IUserService
     {
         private readonly IMapper _mapper;
-        private readonly WebShopDbContext _webShopDbContext;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IConfigurationSection _secretKey;
         private readonly IEmailService _emailService;
 
-        public UserService(IMapper mapper, WebShopDbContext webShopDbContext, IConfiguration configuration, IEmailService emailService) 
+        public UserService(IMapper mapper, IUnitOfWork unit, IConfiguration configuration, IEmailService emailService) 
         {
             _mapper = mapper;
-            _webShopDbContext = webShopDbContext;
+            _unitOfWork = unit;
             _secretKey = configuration.GetSection("SecretKey");
             _emailService = emailService;
         }
 
-        public UserDTO ActivateUser(long id)
+        public async Task<UserDTO> ActivateUser(long id, bool activate)
         {
-            var user = _webShopDbContext.Users.Find(id);
+            var user = await _unitOfWork.UserRepository.GetById(id);
 
             if (user == null) { return null; }
+            if (activate)
+            {
+                user.Approved = true;
 
-            user.Approved = true;
-            _webShopDbContext.SaveChanges();
+                var emailAddress = user.Email;
+                var message = new Message(new string[] { $"{emailAddress}" }, "Profile activation", "Your profile is now active! WebShop App.");
+                await _emailService.SendEmail(message);
+            }
+            else
+            {
+                var emailAddress = user.Email;
+                var message = new Message(new string[] { $"{emailAddress}" }, "Profile activation", "Your profile activation has been rejected. WebShop App.");
+                await _emailService.SendEmail(message);
+            }
 
-            // posalji email
-            var emailAddress = user.Email;
-            var message = new Message(new string[] { $"{emailAddress}" }, "Profile activation", "Your profile is now active! WebShop App.");
-            _emailService.SendEmail(message);
-
+            _unitOfWork.UserRepository.UpdateUser(user);
+            await _unitOfWork.Save();
             return _mapper.Map<UserDTO>(user);
         }
 
-        public List<UserDTO> GetAllUnactivatedUsers()
+        public async Task<List<UserDTO>> GetAllUnactivatedUsers()
         {
-            return _mapper.Map<List<UserDTO>>(_webShopDbContext.Users.Where(u => u.Approved == false));
+            List<User> list = await _unitOfWork.UserRepository.GetAll();
+            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Approved == false).ToList());
         }
 
-        public List<UserDTO> GetAllUsers()
+        public async Task<List<UserDTO>> GetAllUsers()
         {
-            return _mapper.Map<List<UserDTO>>(_webShopDbContext.Users);
+            return _mapper.Map<List<UserDTO>>(await _unitOfWork.UserRepository.GetAll());
         }
 
-        public UserRegisterDTO GetUser(long id)
+        public async Task<UserRegisterDTO> GetUser(long id)
         {
-            var user = _webShopDbContext.Users.Find(id);
+            var user = await _unitOfWork.UserRepository.GetById(id);
             if(user == null) { return null; }
             return _mapper.Map<UserRegisterDTO>(user);
         }
 
-        public TokenDTO Login(UserLoginDTO user)
+        public async Task<TokenDTO> Login(UserLoginDTO user)
         {
             if(user == null) { return null; }
 
-            User user1 = _webShopDbContext.Users.FirstOrDefault(u => u.Email == user.Email);
+            List<User> list = await _unitOfWork.UserRepository.GetAll();
+            User user1 = list.Find(u => u.Email == user.Email);
 
             if(user1 == null) { return null; }
 
@@ -102,10 +113,11 @@ namespace WebShop.Services
             else return null;
         }
 
-        public UserDTO Register(UserRegisterDTO user)
+        public async Task<UserDTO> Register(UserRegisterDTO user)
         {
-            User user1 = _webShopDbContext.Users.FirstOrDefault(u => u.Email == user.Email);
-            if(user1 != null) { return null; }
+            List<User> list = await _unitOfWork.UserRepository.GetAll();
+            User user1 = list.Find(u => u.Email == user.Email);
+            if (user1 != null) { return null; }
             
             User newUser = _mapper.Map<User>(user);
             newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
@@ -120,29 +132,27 @@ namespace WebShop.Services
                 newUser.Approved = true;
                 newUser.Orders = new List<Order>();
             }
-            _webShopDbContext.Users.Add(newUser);
-            _webShopDbContext.SaveChanges();
+            await _unitOfWork.UserRepository.InsertUser(newUser);
+            
+            await _unitOfWork.Save();
 
             return _mapper.Map<UserDTO>(newUser);
         }
 
-        public UserRegisterDTO UpdateUser(long id, UserRegisterDTO user)
+        public async Task<UserRegisterDTO> UpdateUser(long id, UserRegisterDTO user)
         {
-            var u = _webShopDbContext.Users.Find(id);
+            User u = await _unitOfWork.UserRepository.GetById(id);
             if(u == null) { return null; }
             else
             {
-                u.FullName = user.FullName;
-                User user1 = _webShopDbContext.Users.FirstOrDefault(u1 => u1.Email == user.Email);
+                List<User> list = await _unitOfWork.UserRepository.GetAll();
+                User user1 = list.Find(u => u.Email == user.Email);
                 if (user1 != null) { return null; }
-                u.Email = user.Email; 
-                u.Address = user.Address;
-                u.Username = user.Username;
-                u.BirthDate = user.BirthDate;
+                u = _mapper.Map<User>(user);
                 u.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-                u.ProfilePictureUrl = user.ProfilePictureUrl;
 
-                _webShopDbContext.SaveChanges();
+                _unitOfWork.UserRepository.UpdateUser(u);
+                await _unitOfWork.Save();
                 return _mapper.Map<UserRegisterDTO>(u);
             }
         }

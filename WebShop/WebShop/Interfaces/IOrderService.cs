@@ -5,15 +5,15 @@ namespace WebShop.Interfaces
 {
     public interface IOrderService
     {
-        OrderDTO NewOrder(OrderDTO orderDTO, long buyerId);
-        OrderAllDTO GetOrder(long orderId);
-        List<OrderAdminDTO> GetOrders();
-        List<OrderAllDTO> GetUndeliveredOrders(long userId);
-        List<OrderAllDTO> GetNewOrders(long userId);
-        List<OrderAllDTO> GetOldOrders(long userId);
-        List<OrderAllDTO> GetOrders(long userId);
-        List<OrderItemDTO> GetOrderedItems(long sellerId);
-        bool CancelOrder(long orderId);
+        Task<OrderDTO> NewOrder(OrderDTO orderDTO, long buyerId);
+        Task<OrderAllDTO> GetOrder(long orderId);
+        Task<List<OrderAdminDTO>> GetOrders();
+        Task<List<OrderAllDTO>> GetUndeliveredOrders(long userId);
+        Task<List<OrderAllDTO>> GetNewOrders(long userId);
+        Task<List<OrderAllDTO>> GetOldOrders(long userId);
+        Task<List<OrderAllDTO>> GetUserOrders(long userId);
+        Task<List<OrderItemDTO>> GetOrderedItems(long sellerId);
+        Task<bool> CancelOrder(long orderId);
 
     }
 }

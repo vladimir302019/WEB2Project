@@ -4,10 +4,10 @@ namespace WebShop.Interfaces
 {
     public interface IArticleService
     {
-        List<ArticleDTO> GetAllArticles();
-        ArticleDTO GetArticle(long id);
-        ArticleDTO AddNewArticle(ArticleDTO newArticle);
-        bool DeleteArticle(long id);
-        ArticleDTO UpdateArticle(long id, ArticleDTO newArticle);
+        Task<List<ArticleDTO>> GetAllArticles();
+        Task<ArticleDTO> GetArticle(long id);
+        Task<ArticleDTO> AddNewArticle(ArticleDTO newArticle, long sellerId);
+        Task<bool> DeleteArticle(long id);
+        Task<ArticleDTO> UpdateArticle(long id, ArticleDTO newArticle);
     }
 }

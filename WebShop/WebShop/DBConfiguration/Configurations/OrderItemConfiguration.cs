@@ -16,7 +16,10 @@ namespace WebShop.DBConfiguration.Configurations
                 .HasForeignKey(x => x.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            //builder.HasOne(x => x.Article);
+            builder.HasOne(x => x.Article)
+                .WithMany(x => x.Items)
+                .HasForeignKey(x => x.ArticleId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

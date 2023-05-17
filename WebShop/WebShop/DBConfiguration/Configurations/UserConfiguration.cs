@@ -29,12 +29,12 @@ namespace WebShop.DBConfiguration.Configurations
             builder.HasMany(user => user.Orders)
                 .WithOne(order => order.Buyer)
                 .HasForeignKey(order => order.BuyerId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(user => user.Articles)
                 .WithOne(article => article.Seller)
                 .HasForeignKey(article => article.SellerId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

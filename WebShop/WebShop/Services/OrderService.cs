@@ -4,50 +4,64 @@ using WebShop.DTO;
 using WebShop.Interfaces;
 using WebShop.Models;
 using WebShop.Models.Enums;
+using WebShop.Repositories.IRepositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebShop.Services
 {
     public class OrderService : IOrderService
     {
         private readonly IMapper _mapper;
-        private readonly WebShopDbContext _dbContext;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public OrderService(IMapper mapper, WebShopDbContext webShopDbContext)
+        public OrderService(IMapper mapper, IUnitOfWork unit)
         {
             _mapper = mapper;
-            _dbContext = webShopDbContext;
+            _unitOfWork = unit;
         }
 
-        public bool CancelOrder(long orderId)
+        public async Task<bool> CancelOrder(long orderId)
         {
-            var order = _dbContext.Orders.Find(orderId);
+            var order = await _unitOfWork.OrderRepository.GetById(orderId);
             if (order == null) { return false; }
 
+            List<Article> list = await _unitOfWork.ArticleRepository.GetAll();
+
+            foreach (var item in order.OrderItems)
+            {
+                foreach (var article in list)
+                {
+                    if (item.ArticleId == article.Id)
+                    {
+                        article.MaxQuantity = article.MaxQuantity + item.Quantity;
+                        _unitOfWork.ArticleRepository.UpdateArticle(article);
+                    }
+                }
+            }
+
             order.Confirmed = false;
-            _dbContext.SaveChanges();
+            _unitOfWork.OrderRepository.UpdateOrder(order);
+            
+            await _unitOfWork.Save();
 
             return true;
         }
 
-        public OrderAllDTO GetOrder(long orderId)
+        public async Task<OrderAllDTO> GetOrder(long orderId)
         {
-            return _mapper.Map<OrderAllDTO>(_dbContext.Orders.Find(orderId));
+            return _mapper.Map<OrderAllDTO>(await _unitOfWork.OrderRepository.GetById(orderId));
         }
 
-        public List<OrderItemDTO> GetOrderedItems(long sellerId)
+        public async Task<List<OrderItemDTO>> GetOrderedItems(long sellerId)
         {
-            var user = _dbContext.Users.Find(sellerId);
+            var user = await _unitOfWork.UserRepository.GetById(sellerId);
             if(user == null) { return null; }
-            return _mapper.Map<List<OrderItemDTO>>(user.Articles);
 
-            /*List<OrderItemDTO> sellerOrderItems = new List<OrderItemDTO>();
-
-            var user = _dbContext.Users.Find(sellerId);
-            if (user == null) { return null; }
+            List<OrderItemDTO> sellerOrderItems = new List<OrderItemDTO>();
 
             List<OrderAllDTO> orderAllDTOs = new List<OrderAllDTO>();
                 
-            orderAllDTOs = _mapper.Map<List<OrderAllDTO>>(_dbContext.Orders);
+            orderAllDTOs = _mapper.Map<List<OrderAllDTO>>(await _unitOfWork.OrderRepository.GetAll());
             foreach (OrderAllDTO o in orderAllDTOs)
             {
                 foreach (OrderItem oi in o.OrderItems)
@@ -59,63 +73,44 @@ namespace WebShop.Services
                 }
             }
             return sellerOrderItems;
-                */
         }
 
-        public List<OrderAdminDTO> GetOrders()
+        public async Task<List<OrderAdminDTO>> GetOrders()
         {
-            return _mapper.Map<List<OrderAdminDTO>>(_dbContext.Orders);
+            return _mapper.Map<List<OrderAdminDTO>>(await _unitOfWork.OrderRepository.GetAll());
         }
 
-        public List<OrderAllDTO> GetOrders(long userId)
+        public async Task<List<OrderAllDTO>> GetUserOrders(long userId)
         {
-            var user = _dbContext.Users.Find(userId);
+            var user = await _unitOfWork.UserRepository.GetById(userId);
 
             if(user == null) { return null; }
 
             return _mapper.Map<List<OrderAllDTO>>(user.Orders.Where(order => order.DeliveryDate < DateTime.Now && order.Confirmed));
         }
 
-        public List<OrderAllDTO> GetNewOrders(long userId)
+        public async Task<List<OrderAllDTO>> GetNewOrders(long userId)
         {
-            var user = _dbContext.Users.Find(userId);
+            var user = await _unitOfWork.UserRepository.GetById(userId);
 
             if (user == null) { return null; }
 
-            List<OrderItemDTO> orderedItemDTOs = GetOrderedItems(userId);
-            List<OrderAllDTO> ordersAllDTOs = _mapper.Map<List<OrderAllDTO>>(_dbContext.Orders.Where(order => order.DeliveryDate > DateTime.Now && order.Confirmed)); 
-            List<OrderAllDTO> sellerOrders = new List<OrderAllDTO>();
-
-            foreach(var order in ordersAllDTOs)
-            {
-                foreach(var item in orderedItemDTOs)
-                {
-                    if(order.Id == item.OrderId)
-                    {
-                        if(!sellerOrders.Contains(order))
-                        sellerOrders.Add(order);
-                    }
-                }
-            }
-            return sellerOrders;
+            return _mapper.Map<List<OrderAllDTO>>(await _unitOfWork.OrderRepository.GetSellerOrders(userId, false));
         }
 
-        public List<OrderAllDTO> GetUndeliveredOrders(long userId)
+        public async Task<List<OrderAllDTO>> GetUndeliveredOrders(long userId)
         {
-            var user = _dbContext.Users.Find(userId);
+            var user = await _unitOfWork.UserRepository.GetById(userId);
 
             if (user == null) { return null; }
 
             return _mapper.Map<List<OrderAllDTO>>(user.Orders.Where(order => order.DeliveryDate > DateTime.Now && order.Confirmed));
         }
 
-        public OrderDTO NewOrder(OrderDTO orderDTO, long buyerId)
+        public async Task<OrderDTO> NewOrder(OrderDTO orderDTO, long buyerId)
         {
-            var user = _dbContext.Users.Find(buyerId);
-            if(user == null)
-            {
-                return null;
-            }
+            var user = await _unitOfWork.UserRepository.GetById(buyerId);
+            if(user == null){ return null; }
 
             Order newOrder = _mapper.Map<Order>(orderDTO);
 
@@ -126,9 +121,11 @@ namespace WebShop.Services
             int minutes = random.Next(65, 180);
             newOrder.DeliveryDate = DateTime.Now.AddMinutes(minutes);
 
+            List<Article> list = await _unitOfWork.ArticleRepository.GetAll();
+
             foreach(var item in newOrder.OrderItems)
             {
-                foreach(var article in _dbContext.Articles)
+                foreach(var article in list)
                 {
                     if(item.ArticleId == article.Id)
                     {
@@ -145,34 +142,19 @@ namespace WebShop.Services
             }
 
             user.Orders.Add(newOrder);
-            _dbContext.Orders.Add(newOrder);
-            _dbContext.SaveChanges();
+            await _unitOfWork.OrderRepository.InsertOrder(newOrder);
+            await _unitOfWork.Save();
 
             return _mapper.Map<OrderDTO>(newOrder);
         }
 
-        public List<OrderAllDTO> GetOldOrders(long userId)
+        public async Task<List<OrderAllDTO>> GetOldOrders(long userId)
         {
-            var user = _dbContext.Users.Find(userId);
+            var user = await _unitOfWork.UserRepository.GetById(userId);
 
             if (user == null) { return null; }
 
-            List<OrderItemDTO> orderedItemDTOs = GetOrderedItems(userId);
-            List<OrderAllDTO> ordersAllDTOs = _mapper.Map<List<OrderAllDTO>>(_dbContext.Orders.Where(order => order.DeliveryDate < DateTime.Now && order.Confirmed));
-            List<OrderAllDTO> sellerOrders = new List<OrderAllDTO>();
-
-            foreach (var order in ordersAllDTOs)
-            {
-                foreach (var item in orderedItemDTOs)
-                {
-                    if (order.Id == item.OrderId)
-                    {
-                        if (!sellerOrders.Contains(order))
-                            sellerOrders.Add(order);
-                    }
-                }
-            }
-            return sellerOrders;
+            return _mapper.Map<List<OrderAllDTO>>(await _unitOfWork.OrderRepository.GetSellerOrders(userId, true));
         }
     }
 }

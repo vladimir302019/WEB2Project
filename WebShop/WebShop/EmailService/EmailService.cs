@@ -11,7 +11,7 @@ namespace WebShop.EmailService
             _emailConfig = emailConfiguration;
         }
 
-        public void SendEmail(Message message)
+        public async Task SendEmail(Message message)
         {
             //create message
             var emailMessage = new MimeMessage();
@@ -26,11 +26,11 @@ namespace WebShop.EmailService
                 try
                 {
                     client.CheckCertificateRevocation = false;
-                    client.Connect(_emailConfig.SmtpServer, _emailConfig.Port, MailKit.Security.SecureSocketOptions.Auto);
+                    await client.ConnectAsync(_emailConfig.SmtpServer, _emailConfig.Port, MailKit.Security.SecureSocketOptions.Auto);
                     client.AuthenticationMechanisms.Remove("XOAUTH2");
-                    client.Authenticate(_emailConfig.Username,_emailConfig.Password);
+                    await client.AuthenticateAsync(_emailConfig.Username,_emailConfig.Password);
 
-                    client.Send(emailMessage);
+                    await client.SendAsync(emailMessage);
                 }
                 catch (Exception)
                 {
@@ -39,7 +39,7 @@ namespace WebShop.EmailService
                 }
                 finally
                 {
-                    client.Disconnect(true);
+                    await client.DisconnectAsync(true);
                     client.Dispose();
                 }
             }
