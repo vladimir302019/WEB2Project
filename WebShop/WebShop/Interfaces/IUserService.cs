@@ -1,0 +1,17 @@
+﻿using System.Security.Claims;
+using WebShop.DTO.UserDTOs;
+
+namespace WebShop.Interfaces
+{
+    public interface IUserService
+    {
+        Task<TokenDTO> Login(UserLoginDTO user);
+        Task<UserDTO> Register(UserRegisterDTO user);
+        Task<List<UserDTO>> GetSellers();
+        Task<List<UserDTO>> GetAllUnactivatedSellers();
+        Task<UserDTO> GetUser(long id);
+        Task<UserUpdateDTO> UpdateUser(long id, UserUpdateDTO user);
+        Task<UserDTO> ActivateUser(long id, bool activate);
+        long GetUserIdFromToken(ClaimsPrincipal user);
+    }
+}
