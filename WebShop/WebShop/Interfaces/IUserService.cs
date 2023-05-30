@@ -13,5 +13,8 @@ namespace WebShop.Interfaces
         Task<UserUpdateDTO> UpdateUser(long id, UserUpdateDTO user);
         Task<UserDTO> ActivateUser(long id, bool activate);
         long GetUserIdFromToken(ClaimsPrincipal user);
+        Task<TokenDTO> ExternalLogin(string token);
+        Task UploadImage(long id, IFormFile file);
+
     }
 }

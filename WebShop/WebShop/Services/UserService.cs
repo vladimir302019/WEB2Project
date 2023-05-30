@@ -9,6 +9,11 @@ using System.IdentityModel.Tokens.Jwt;
 using AutoMapper;
 using WebShop.Repositories.IRepositories;
 using WebShop.Services.EmailServices;
+using WebShop.ExceptionHandler.Exceptions;
+using System.Runtime;
+using Google.Apis.Auth;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using System.Runtime.Intrinsics.X86;
 
 namespace WebShop.Services
 {
@@ -17,6 +22,7 @@ namespace WebShop.Services
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfigurationSection _secretKey;
+        private readonly IConfigurationSection _googleClientId;
         private readonly IEmailService _emailService;
 
         public UserService(IMapper mapper, IUnitOfWork unit, IConfiguration configuration, IEmailService emailService)
@@ -25,13 +31,14 @@ namespace WebShop.Services
             _unitOfWork = unit;
             _secretKey = configuration.GetSection("SecretKey");
             _emailService = emailService;
+            _googleClientId = configuration.GetSection("GoogleClientId");
         }
 
         public async Task<UserDTO> ActivateUser(long id, bool activate)
         {
             var user = await _unitOfWork.UserRepository.GetById(id);
 
-            if (user == null) { return null; }
+            if (user == null) { throw new NotFoundException("User doesn't exist."); }
             if (activate)
             {
                 user.Approved = true;
@@ -52,22 +59,71 @@ namespace WebShop.Services
             return _mapper.Map<UserDTO>(user);
         }
 
+        public async Task<TokenDTO> ExternalLogin(string token)
+        {
+            ExternalUserDTO externalUser = await VerifyGoogleToken(token);
+            if(externalUser == null) { throw new ConflictException("Invalid user google token."); }
+
+            List<User> users = await _unitOfWork.UserRepository.GetAll();
+            User user = users.Find(u => u.Username.Equals(externalUser.UserName));
+
+            if(user == null)
+            {
+                user = new User()
+                {
+                    FullName = externalUser.Name,
+                    Username = externalUser.UserName,
+                    Email = externalUser.Email,
+                    Password = "",
+                    Address = "",
+                    BirthDate = DateTime.Now,
+                    Type = UserType.Buyer,
+                    Approved = true
+                };
+
+                await _unitOfWork.UserRepository.InsertUser(user);
+                await _unitOfWork.Save();
+            }
+
+            List<Claim> userClaims = new List<Claim>();
+
+            userClaims.Add(new Claim(ClaimTypes.Role, "Buyer"));
+            
+            userClaims.Add(new Claim(ClaimTypes.Name, user.Id.ToString()));
+
+            SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey.Value));
+            var signinCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var tokenOptions = new JwtSecurityToken(
+                issuer: "https://localhost:44304",
+                claims: userClaims,
+                expires: DateTime.Now.AddMinutes(20),
+                signingCredentials: signinCredentials
+                );
+            string tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+            return new TokenDTO()
+            {
+                Token = tokenString,
+                Role = user.Type.ToString(),
+                UserId = user.Id
+            };
+        }
+
         public async Task<List<UserDTO>> GetAllUnactivatedSellers()
         {
             List<User> list = await _unitOfWork.UserRepository.GetAll();
-            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Approved == false && u.type == UserType.Seller).ToList());
+            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Approved == false && u.Type == UserType.Seller).ToList());
         }
 
         public async Task<List<UserDTO>> GetSellers()
         {
             List<User> list = await _unitOfWork.UserRepository.GetAll();
-            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Approved == true && u.type == UserType.Seller).ToList());
+            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Approved == true && u.Type == UserType.Seller).ToList());
         }
 
         public async Task<UserDTO> GetUser(long id)
         {
             var user = await _unitOfWork.UserRepository.GetById(id);
-            if (user == null) { return null; }
+            if (user == null) { throw new NotFoundException("User doesn't exist."); }
             return _mapper.Map<UserDTO>(user);
         }
 
@@ -80,26 +136,24 @@ namespace WebShop.Services
 
         public async Task<TokenDTO> Login(UserLoginDTO user)
         {
-            if (user == null) { return null; }
-
             List<User> list = await _unitOfWork.UserRepository.GetAll();
             User user1 = list.Find(u => u.Email == user.Email);
 
-            if (user1 == null) { return null; }
+            if (user1 == null) { throw new NotFoundException($"User with Email: {user.Email} doesn't exist."); }
 
             if (BCrypt.Net.BCrypt.Verify(user.Password, user1.Password))
             {
                 List<Claim> userClaims = new List<Claim>();
 
-                if (user1.type.ToString() == "Admin")
+                if (user1.Type.ToString() == "Admin")
                 {
                     userClaims.Add(new Claim(ClaimTypes.Role, "Admin"));
                 }
-                if (user1.type.ToString() == "Seller")
+                if (user1.Type.ToString() == "Seller")
                 {
                     userClaims.Add(new Claim(ClaimTypes.Role, "Seller"));
                 }
-                if (user1.type.ToString() == "Buyer")
+                if (user1.Type.ToString() == "Buyer")
                 {
                     userClaims.Add(new Claim(ClaimTypes.Role, "Buyer"));
                 }
@@ -117,23 +171,23 @@ namespace WebShop.Services
                 return new TokenDTO()
                 {
                     Token = tokenString,
-                    Role = user1.type.ToString(),
+                    Role = user1.Type.ToString(),
                     UserId = user1.Id
                 };
             }
-            else return null;
+            else throw new ConflictException("Password doesn't match.");
         }
 
         public async Task<UserDTO> Register(UserRegisterDTO user)
         {
             List<User> list = await _unitOfWork.UserRepository.GetAll();
             User user1 = list.Find(u => u.Email == user.Email);
-            if (user1 != null) { return null; }
+            if (user1 != null) { throw new ConflictException($"User with Email: {user.Email} already exists."); }
 
             User newUser = _mapper.Map<User>(user);
             newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
 
-            if (newUser.type.ToString() == "Seller")
+            if (newUser.Type.ToString() == "Seller")
             {
                 newUser.Approved = false;
             }
@@ -141,6 +195,7 @@ namespace WebShop.Services
             {
                 newUser.Approved = true;
             }
+            newUser.ProfilePictureUrl = new byte[0];
             await _unitOfWork.UserRepository.InsertUser(newUser);
 
             await _unitOfWork.Save();
@@ -151,19 +206,68 @@ namespace WebShop.Services
         public async Task<UserUpdateDTO> UpdateUser(long id, UserUpdateDTO user)
         {
             User u = await _unitOfWork.UserRepository.GetById(id);
-            if (u == null) { return null; }
+            if (u == null) { throw new NotFoundException("User doesn't exist."); }
             
             List<User> list = await _unitOfWork.UserRepository.GetAll();
             User user1 = list.Find(u => u.Email == user.Email && u.Id != id);
-            if (user1 != null) { return null; }
+            if (user1 != null) { throw new ConflictException($"User with Email: {user.Email} already exists."); }
             
             u = _mapper.Map<User>(user);
             u.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+
+            using(var ms = new MemoryStream())
+            {
+                user.ProfilePictureUrl.CopyTo(ms);
+                var fileBytes = ms.ToArray();
+
+                u.ProfilePictureUrl = fileBytes;
+            }
 
             _unitOfWork.UserRepository.UpdateUser(u);
             await _unitOfWork.Save();
             return _mapper.Map<UserUpdateDTO>(u);
             
+        }
+
+        public async Task UploadImage(long id, IFormFile file)
+        {
+            var user = await _unitOfWork.UserRepository.GetById(id) ?? throw new NotFoundException("User doesn't exist.");
+
+            using(var ms = new MemoryStream())
+            {
+                file.CopyTo(ms);
+                var fileBytes = ms.ToArray();
+
+                user.ProfilePictureUrl = fileBytes;
+                _unitOfWork.UserRepository.UpdateUser(user);
+            }
+            await _unitOfWork.Save();
+        }
+
+        private async Task<ExternalUserDTO> VerifyGoogleToken(string externalLoginToken)
+        {
+            try
+            {
+                var validationSettings = new GoogleJsonWebSignature.ValidationSettings()
+                {
+                    Audience = new List<string>() { _googleClientId.ToString() }
+                };
+
+                var googleUserInfo = await GoogleJsonWebSignature.ValidateAsync(externalLoginToken, validationSettings);
+
+                ExternalUserDTO externalUser = new ExternalUserDTO()
+                {
+                    UserName = googleUserInfo.Email.Split("@")[0],
+                    Name = googleUserInfo.Name,
+                    Email = googleUserInfo.Email
+                };
+
+                return externalUser;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

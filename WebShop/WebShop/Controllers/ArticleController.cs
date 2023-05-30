@@ -25,11 +25,11 @@ namespace WebShop.Controllers
         [Authorize]
         public async Task<IActionResult> Get([FromQuery] long id)
         {
-            return Ok(await _articleService.GetArticle(id));
+            return Ok(await _articleService.GetArticle(id, _userService.GetUserIdFromToken(User)));
         }
 
         [HttpGet("get-all")]
-        [Authorize]
+        [Authorize(Roles = "Buyer, Admin")]
         public async Task<IActionResult> GetAll()
         {
             List<ArticleDTO> articleDTOs = await _articleService.GetAllArticles();
@@ -62,6 +62,14 @@ namespace WebShop.Controllers
         public async Task<IActionResult> GetSellerArticles()
         {
             return Ok(await _articleService.GetSellerArticles(_userService.GetUserIdFromToken(User)));
+        }
+
+        [HttpPut("upload-image")]
+        [Authorize(Roles = "Seller")]
+        public async Task<IActionResult> UploadImage(long id,IFormFile file)
+        {
+            await _articleService.UploadImage(id, file);
+            return Ok();
         }
     }
 }

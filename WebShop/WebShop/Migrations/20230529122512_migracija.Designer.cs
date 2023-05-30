@@ -12,7 +12,7 @@ using WebShop.DBConfiguration;
 namespace WebShop.Migrations
 {
     [DbContext(typeof(WebShopDbContext))]
-    [Migration("20230522140823_migracija")]
+    [Migration("20230529122512_migracija")]
     partial class migracija
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,9 +45,9 @@ namespace WebShop.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("PhotoUrl")
+                    b.Property<byte[]>("PhotoUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<double>("Price")
                         .HasColumnType("float");
@@ -161,17 +161,17 @@ namespace WebShop.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("ProfilePictureUrl")
+                    b.Property<byte[]>("ProfilePictureUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(60)
                         .HasColumnType("nvarchar(60)");
-
-                    b.Property<int>("type")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

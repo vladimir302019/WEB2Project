@@ -16,8 +16,6 @@ namespace WebShop.DTO.UserDTOs
         [Required]
         public DateTime BirthDate { get; set; }
         [Required]
-        public string ProfilePictureUrl { get; set; }
-        [Required]
         public string Address { get; set; }
         [Required]
         public UserType type { get; set; }

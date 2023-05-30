@@ -12,6 +12,7 @@ using WebShop.Mapping;
 using Microsoft.Extensions.Configuration;
 using WebShop.DBConfiguration;
 using Microsoft.EntityFrameworkCore;
+using WebShop.ExceptionHandler;
 
 string _cors = "cors";
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddLogging();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -94,6 +96,8 @@ builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+builder.Services.AddScoped<ExceptionHandler>();
+
 builder.Services.AddDbContext<WebShopDbContext>(options => {
     options.UseSqlServer(builder.Configuration.GetConnectionString("WebShopContext"));
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
@@ -106,23 +110,25 @@ var mapperConfig = new MapperConfiguration(mc =>
 IMapper mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    //app.UseSwagger();
+    //app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
-app.UseRouting();
 
 app.UseCors(_cors);
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionHandler>();
 
 app.MapControllers();
 

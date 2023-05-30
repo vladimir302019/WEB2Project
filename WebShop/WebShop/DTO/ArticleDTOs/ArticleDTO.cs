@@ -13,6 +13,6 @@ namespace WebShop.DTO.ArticleDTOs
         [Required]
         public int MaxQuantity { get; set; }
         [Required]
-        public string PhotoUrl { get; set; }
+        public byte[] PhotoUrl { get; set; }
     }
 }

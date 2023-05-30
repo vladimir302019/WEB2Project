@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using WebShop.DTO.OrderDTOs;
+using WebShop.ExceptionHandler.Exceptions;
 using WebShop.Interfaces;
 using WebShop.Models;
 using WebShop.Models.Enums;
@@ -21,7 +22,7 @@ namespace WebShop.Services
         public async Task<bool> CancelOrder(long orderId)
         {
             var order = await _unitOfWork.OrderRepository.GetById(orderId);
-            if (order == null) { return false; }
+            if (order == null) { throw new NotFoundException("Order doesn't exist."); }
 
             List<Article> list = await _unitOfWork.ArticleRepository.GetAll();
 
@@ -59,8 +60,9 @@ namespace WebShop.Services
         {
             var user = await _unitOfWork.UserRepository.GetById(userId);
 
-            if (user == null) { return null; }
-
+            if (user == null) { throw new NotFoundException("User doesn't exist."); }
+            List<Order> lista = await _unitOfWork.OrderRepository.GetAll();
+            user.Orders = lista.Where(o => o.BuyerId == user.Id).ToList();
             return _mapper.Map<List<OrderAllDTO>>(user.Orders.Where(order => order.DeliveryDate < DateTime.Now && order.Confirmed));
         }
 
@@ -68,7 +70,7 @@ namespace WebShop.Services
         {
             var user = await _unitOfWork.UserRepository.GetById(userId);
 
-            if (user == null) { return null; }
+            if (user == null) { throw new NotFoundException("User doesn't exist."); }
 
             return _mapper.Map<List<OrderAllDTO>>(await _unitOfWork.OrderRepository.GetSellerOrders(userId, false));
         }
@@ -77,15 +79,16 @@ namespace WebShop.Services
         {
             var user = await _unitOfWork.UserRepository.GetById(userId);
 
-            if (user == null) { return null; }
-
+            if (user == null) { throw new NotFoundException("User doesn't exist."); }
+            List<Order> lista = await _unitOfWork.OrderRepository.GetAll();
+            user.Orders = lista.Where(o => o.BuyerId == user.Id).ToList();
             return _mapper.Map<List<OrderAllDTO>>(user.Orders.Where(order => order.DeliveryDate > DateTime.Now && order.Confirmed));
         }
 
         public async Task<OrderDTO> NewOrder(OrderDTO orderDTO, long buyerId)
         {
             var user = await _unitOfWork.UserRepository.GetById(buyerId);
-            if (user == null) { return null; }
+            if (user == null) { throw new NotFoundException("User doesn't exist."); }
 
             Order newOrder = _mapper.Map<Order>(orderDTO);
 
@@ -98,7 +101,7 @@ namespace WebShop.Services
 
             List<Article> list = await _unitOfWork.ArticleRepository.GetAll();
             List<User> allSellers = await _unitOfWork.UserRepository.GetAll();
-            allSellers = allSellers.Where(s => s.type == UserType.Seller).ToList();
+            allSellers = allSellers.Where(s => s.Type == UserType.Seller).ToList();
             List<long> ids = new List<long>();
             List<User> sellers = new List<User>();
             foreach (var item in newOrder.OrderItems)
@@ -112,10 +115,6 @@ namespace WebShop.Services
                         if (article.MaxQuantity >= item.Quantity)
                         {
                             article.MaxQuantity = article.MaxQuantity - item.Quantity;
-                        }
-                        else
-                        {
-                            return null;
                         }
                     }
                 }
@@ -142,7 +141,7 @@ namespace WebShop.Services
         {
             var user = await _unitOfWork.UserRepository.GetById(userId);
 
-            if (user == null) { return null; }
+            if (user == null) { throw new NotFoundException("User doesn't exist"); }
 
             return _mapper.Map<List<OrderAllDTO>>(await _unitOfWork.OrderRepository.GetSellerOrders(userId, true));
         }

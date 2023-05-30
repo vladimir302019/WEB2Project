@@ -7,7 +7,7 @@ using WebShop.Interfaces;
 
 namespace WebShop.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/user")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -33,11 +33,18 @@ namespace WebShop.Controllers
             return Ok(token);
         }
 
+        [HttpPost("external-login")]
+        public async Task<IActionResult> ExternalLogin([FromBody] string t)
+        {
+            TokenDTO token = await _userService.ExternalLogin(t);
+            return Ok(token);
+        }
+
         [HttpGet("user")]
         // [Authorize]
-        public async Task<IActionResult> GetUser([FromQuery] TokenDTO tokenDTO)
+        public async Task<IActionResult> GetUser()
         {
-            UserDTO userDTO = await _userService.GetUser(tokenDTO.UserId);
+            UserDTO userDTO = await _userService.GetUser(_userService.GetUserIdFromToken(User));
             return Ok(userDTO);
 
         }
@@ -63,7 +70,7 @@ namespace WebShop.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateDTO user)
         {
-            return Ok(await _userService.UpdateUser(user.Id, user));
+            return Ok(await _userService.UpdateUser(_userService.GetUserIdFromToken(User), user));
 
         }
         //activate
@@ -73,6 +80,14 @@ namespace WebShop.Controllers
         {
             return Ok(await _userService.ActivateUser(user.Id, user.IsActive));
 
+        }
+
+        [HttpPut("upload-image")]
+        [Authorize]
+        public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            await _userService.UploadImage(_userService.GetUserIdFromToken(User), file);
+            return Ok();
         }
     }
 }
