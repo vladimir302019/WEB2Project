@@ -19,7 +19,6 @@ namespace WebShop.Controllers
         }
 
         [HttpPut("register")]
-        //[Authorize]
         public async Task<IActionResult> Register([FromBody] UserRegisterDTO registerDTO)
         {
             UserDTO user = await _userService.Register(registerDTO);
@@ -34,14 +33,14 @@ namespace WebShop.Controllers
         }
 
         [HttpPost("external-login")]
-        public async Task<IActionResult> ExternalLogin([FromBody] string t)
+        public async Task<IActionResult> ExternalLogin([FromForm] string googleToken)
         {
-            TokenDTO token = await _userService.ExternalLogin(t);
+            TokenDTO token = await _userService.ExternalLogin(googleToken);
             return Ok(token);
         }
 
         [HttpGet("user")]
-        // [Authorize]
+        [Authorize(Roles = "Admin, Buyer, Seller")]
         public async Task<IActionResult> GetUser()
         {
             UserDTO userDTO = await _userService.GetUser(_userService.GetUserIdFromToken(User));
@@ -67,8 +66,8 @@ namespace WebShop.Controllers
         }
         //update
         [HttpPut("update-profile")]
-        [Authorize]
-        public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateDTO user)
+        [Authorize(Roles = "Admin, Buyer, Seller")]
+        public async Task<IActionResult> UpdateProfile([FromForm] UserUpdateDTO user)
         {
             return Ok(await _userService.UpdateUser(_userService.GetUserIdFromToken(User), user));
 
@@ -83,10 +82,27 @@ namespace WebShop.Controllers
         }
 
         [HttpPut("upload-image")]
-        [Authorize]
+        [Consumes("multipart/form-data")]
+        [Authorize(Roles = "Admin, Buyer, Seller")]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
             await _userService.UploadImage(_userService.GetUserIdFromToken(User), file);
+            return Ok();
+        }
+
+        [HttpGet("get-image")]
+        [Authorize(Roles = "Admin, Buyer, Seller")]
+        public async Task<IActionResult> GetImage()
+        {
+            UserImageDTO userDTO = await _userService.GetUserImage(_userService.GetUserIdFromToken(User));
+            return Ok(userDTO);
+        }
+
+        [HttpPost("change-password")]
+        [Authorize(Roles = "Admin, Buyer, Seller")]
+        public async Task<IActionResult> ChangePassword([FromForm] UserPasswordDTO userPasswordDTO)
+        {
+            await _userService.ChangePassword(_userService.GetUserIdFromToken(User), userPasswordDTO.OldPassword, userPasswordDTO.NewPassword);
             return Ok();
         }
     }

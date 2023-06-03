@@ -15,6 +15,8 @@ namespace WebShop.Interfaces
         long GetUserIdFromToken(ClaimsPrincipal user);
         Task<TokenDTO> ExternalLogin(string token);
         Task UploadImage(long id, IFormFile file);
+        Task<UserImageDTO> GetUserImage(long id);
+        Task ChangePassword(long id, string oldPassword, string newPassword);
 
     }
 }

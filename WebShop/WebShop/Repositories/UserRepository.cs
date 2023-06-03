@@ -9,6 +9,14 @@ namespace WebShop.Repositories
     {
         private readonly WebShopDbContext _context;
         public UserRepository(WebShopDbContext webShopDbContext) { _context = webShopDbContext; }
+
+        public async Task ChangePassword(long id, string password)
+        {
+            User user = await _context.Users.FindAsync(id);
+            user.Password = password;
+            _context.Users.Update(user);
+        }
+
         public void DeleteUser(long id)
         {
             _context.Users.Remove(_context.Users.Find(id));
@@ -22,6 +30,12 @@ namespace WebShop.Repositories
         public async Task<User> GetById(long id)
         {
             return await _context.Users.FindAsync(id);
+        }
+
+        public async Task<byte[]> GetUserImage(long id)
+        {
+            User user = await _context.Users.FindAsync(id);
+            return user.ProfilePictureUrl;
         }
 
         public async Task<User> InsertUser(User user)

@@ -9,5 +9,7 @@ namespace WebShop.Repositories.IRepositories
         Task<User> InsertUser(User user);
         void DeleteUser(long id);
         void UpdateUser(User user);
+        Task<byte[]> GetUserImage(long id);
+        Task ChangePassword(long id, string password);
     }
 }

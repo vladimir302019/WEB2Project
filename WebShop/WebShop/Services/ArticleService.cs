@@ -81,7 +81,7 @@ namespace WebShop.Services
         public async Task<List<ArticleDTO>> GetSellerArticles(long id)
         {
             var seller = await _unitOfWork.UserRepository.GetById(id);
-            if (seller == null) { return null; }
+            if (seller == null) { throw new NotFoundException("User doesn't exist."); }
             if (!seller.Approved)
             {
                 throw new ConflictException("Seller isn't approved. Wait for admin approval!");

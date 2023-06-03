@@ -16,6 +16,8 @@ namespace WebShop.Mapping
             CreateMap<User, ActivateUserDTO>().ReverseMap();
             CreateMap<User, UserUpdateDTO>().ReverseMap();
             CreateMap<User, ExternalUserDTO>().ReverseMap();
+            CreateMap<User, UserImageDTO>().ReverseMap();
+            CreateMap<User, UserPasswordDTO>().ReverseMap();
 
             CreateMap<Order, OrderDTO>().ReverseMap();
             CreateMap<Order, OrderAllDTO>().ReverseMap();

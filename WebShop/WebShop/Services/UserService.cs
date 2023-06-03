@@ -14,6 +14,7 @@ using System.Runtime;
 using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.Runtime.Intrinsics.X86;
+using Org.BouncyCastle.Crypto.Paddings;
 
 namespace WebShop.Services
 {
@@ -65,7 +66,7 @@ namespace WebShop.Services
             if(externalUser == null) { throw new ConflictException("Invalid user google token."); }
 
             List<User> users = await _unitOfWork.UserRepository.GetAll();
-            User user = users.Find(u => u.Username.Equals(externalUser.UserName));
+            User user = users.Find(u => u.Email.Equals(externalUser.Email));
 
             if(user == null)
             {
@@ -74,6 +75,7 @@ namespace WebShop.Services
                     FullName = externalUser.Name,
                     Username = externalUser.UserName,
                     Email = externalUser.Email,
+                    ProfilePictureUrl = new byte[0],
                     Password = "",
                     Address = "",
                     BirthDate = DateTime.Now,
@@ -207,21 +209,30 @@ namespace WebShop.Services
         {
             User u = await _unitOfWork.UserRepository.GetById(id);
             if (u == null) { throw new NotFoundException("User doesn't exist."); }
-            
+
+            var password = u.Password;
+            var type = u.Type;
+            var profilePicUrl = u.ProfilePictureUrl;
+            var approved = u.Approved;
             List<User> list = await _unitOfWork.UserRepository.GetAll();
             User user1 = list.Find(u => u.Email == user.Email && u.Id != id);
             if (user1 != null) { throw new ConflictException($"User with Email: {user.Email} already exists."); }
             
             u = _mapper.Map<User>(user);
-            u.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-
+            u.Password = password;
+            u.Type = type;
+            u.ProfilePictureUrl = profilePicUrl;
+            u.Id = id;
+            u.Approved = approved;
+            //u.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            /*
             using(var ms = new MemoryStream())
             {
                 user.ProfilePictureUrl.CopyTo(ms);
                 var fileBytes = ms.ToArray();
 
                 u.ProfilePictureUrl = fileBytes;
-            }
+            }*/
 
             _unitOfWork.UserRepository.UpdateUser(u);
             await _unitOfWork.Save();
@@ -250,7 +261,7 @@ namespace WebShop.Services
             {
                 var validationSettings = new GoogleJsonWebSignature.ValidationSettings()
                 {
-                    Audience = new List<string>() { _googleClientId.ToString() }
+                    Audience = new List<string>() { _googleClientId.Value }
                 };
 
                 var googleUserInfo = await GoogleJsonWebSignature.ValidateAsync(externalLoginToken, validationSettings);
@@ -267,6 +278,33 @@ namespace WebShop.Services
             catch
             {
                 return null;
+            }
+        }
+
+        public async Task<UserImageDTO> GetUserImage(long id)
+        {
+            var user = await _unitOfWork.UserRepository.GetById(id) ?? throw new NotFoundException("User doesn't exist.");
+
+            byte[] imageBytes = await _unitOfWork.UserRepository.GetUserImage(user.Id);
+
+            UserImageDTO userImage = new UserImageDTO()
+            {
+                ImageBytes = imageBytes
+            };
+            return userImage;
+        }
+
+        public async Task ChangePassword(long id, string oldPassword, string newPassword)
+        {
+            var user = await _unitOfWork.UserRepository.GetById(id) ?? throw new NotFoundException("User doesn't exist.");
+
+            if (BCrypt.Net.BCrypt.Verify(oldPassword, user.Password )) {
+                await _unitOfWork.UserRepository.ChangePassword(id, BCrypt.Net.BCrypt.HashPassword(newPassword));
+                await _unitOfWork.Save();
+            }
+            else
+            {
+                throw new ConflictException("Password doesn't match with the current one!");
             }
         }
     }

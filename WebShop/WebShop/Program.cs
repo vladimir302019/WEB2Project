@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using WebShop.DBConfiguration;
 using Microsoft.EntityFrameworkCore;
 using WebShop.ExceptionHandler;
+using Microsoft.Extensions.FileProviders;
 
 string _cors = "cors";
 var builder = WebApplication.CreateBuilder(args);
@@ -121,14 +122,14 @@ if (app.Environment.IsDevelopment())
     //app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ExceptionHandler>();
+
 app.UseHttpsRedirection();
 
 app.UseCors(_cors);
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseMiddleware<ExceptionHandler>();
 
 app.MapControllers();
 
