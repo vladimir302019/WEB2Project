@@ -205,6 +205,9 @@ const ProfilePage = () => {
                           sx={{
                             display: "flex",
                             alignItems: "center",
+                            justifyContent: "space-between",
+                            maxWidth: "500px",
+                            margin: "0 auto",
                           }}
                         >
                           <ProfileFormField
@@ -213,10 +216,19 @@ const ProfilePage = () => {
                             initialValue={type}
                             editable={false}
                           ></ProfileFormField>
-                          {user.role === "Seller" && (
-                            <ProfileFormField
-                              verificationStatus={user.approved}
-                            ></ProfileFormField>
+                          {user.type === 0 && (
+                            <Button
+                            color={user.approved ? "success" : "error"}
+                            variant="contained"
+                            sx={{
+                              mt: 1,
+                              mb: 2,
+                              ml: 3,
+                              border: 1,
+                            }}
+                          >
+                            {user.approved ? 'APPROVED' : 'DENIED'}
+                          </Button>
                           )}
                         </Box>
                         <Box

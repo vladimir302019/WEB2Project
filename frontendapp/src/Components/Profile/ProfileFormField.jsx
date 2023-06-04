@@ -1,7 +1,7 @@
 import { InputLabel, Box, TextField } from "@mui/material";
 import React, { useState } from "react";
 
-const ProfileFromField = (props) => {
+const ProfileFormField = (props) => {
     const [value, setValue] = useState(props.initialValue);
 
     const changeHandler = (event) =>{
@@ -29,4 +29,4 @@ const ProfileFromField = (props) => {
     );
 };
 
-export default ProfileFromField;
+export default ProfileFormField;

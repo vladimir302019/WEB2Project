@@ -1,5 +1,5 @@
 import {createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import {Login, Register, GetUserInfoAction, UpdateUser, UploadImage, GetImage, ChangePassword, GoogleLogin} from "../Services/UserService";
+import {Login, Register, GetUserInfoAction, UpdateUser, UploadImage, GetImage, ChangePassword, GoogleLogin } from "../Services/UserService";
 import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -104,7 +104,7 @@ export const googleLoginAction = createAsyncThunk(
         return thunkApi.rejectWithValue(error.response.data.error);
       }
     }
-  );
+)
 
 // USER SLICE 
 const userSlice = createSlice({
