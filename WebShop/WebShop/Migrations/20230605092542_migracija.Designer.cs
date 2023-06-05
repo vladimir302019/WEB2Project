@@ -12,7 +12,7 @@ using WebShop.DBConfiguration;
 namespace WebShop.Migrations
 {
     [DbContext(typeof(WebShopDbContext))]
-    [Migration("20230529122512_migracija")]
+    [Migration("20230605092542_migracija")]
     partial class migracija
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -145,6 +145,9 @@ namespace WebShop.Migrations
 
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("Denied")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Email")
                         .IsRequired()

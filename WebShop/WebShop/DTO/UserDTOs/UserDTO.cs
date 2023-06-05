@@ -12,5 +12,6 @@ namespace WebShop.DTO.UserDTOs
         public string Address { get; set; }
         public UserType type { get; set; }
         public bool Approved { get; set; }
+        public bool Denied { get; set; }
     }
 }

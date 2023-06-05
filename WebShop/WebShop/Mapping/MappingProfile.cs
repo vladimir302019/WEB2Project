@@ -27,6 +27,8 @@ namespace WebShop.Mapping
 
             CreateMap<Article, ArticleDTO>().ReverseMap();
             CreateMap<Article, ArticleUpdateDTO>().ReverseMap();
+            CreateMap<Article, ArticleImageDTO>().ReverseMap();
+            CreateMap<Article, ArticleGetDTO>().ReverseMap();
         }
     }
 }

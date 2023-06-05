@@ -15,7 +15,7 @@ export default function AdminPanel() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const inactiveSellers = useSelector((state) => state.admin.inactiveSellers);
-    const activeSellers = useSelector((state) => state.admin.allSellers);
+    const allSellers = useSelector((state) => state.admin.allSellers);
     const [isInitial, setIsInitial] = useState(true);
 
     const handleApprove = (id) => {
@@ -121,12 +121,12 @@ export default function AdminPanel() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {activeSellers.map((seller) => (
+                {allSellers.map((seller) => (
                   <TableRow key={seller.id}>
                     <TableCell>{seller.fullName}</TableCell>
                     <TableCell>{seller.username}</TableCell>
                     <TableCell>{seller.email}</TableCell>
-                    <TableCell>{seller.approved ? 'APPROVED' : 'DENIED'}</TableCell>  
+                    <TableCell>{seller.approved ? 'APPROVED' : (seller.denied ? 'DENIED' : 'PENDING') }</TableCell>  
                   </TableRow>
                 ))}
               </TableBody>

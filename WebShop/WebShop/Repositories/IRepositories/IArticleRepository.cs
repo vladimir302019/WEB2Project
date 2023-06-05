@@ -10,6 +10,7 @@ namespace WebShop.Repositories.IRepositories
         Task<Article> InsertArticle(Article article);
         void DeleteArticle(long id);
         void UpdateArticle(Article article);
+        Task<byte[]> GetArticleImage(long id);
 
     }
 }

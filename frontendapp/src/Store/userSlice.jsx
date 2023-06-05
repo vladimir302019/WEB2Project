@@ -117,6 +117,7 @@ const userSlice = createSlice({
             state.isLoggedIn = false;
             localStorage.removeItem("token");
             localStorage.removeItem("user");
+            localStorage.removeItem("imageUrl");
         },
     },
     extraReducers: (builder) => {

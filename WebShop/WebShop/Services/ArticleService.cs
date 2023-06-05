@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using WebShop.DTO.ArticleDTOs;
+using WebShop.DTO.UserDTOs;
 using WebShop.ExceptionHandler.Exceptions;
 using WebShop.Interfaces;
 using WebShop.Models;
@@ -35,7 +36,6 @@ namespace WebShop.Services
 
             article = _mapper.Map<Article>(newArticle);
             article.SellerId = sellerId;
-            
             await _unitOfWork.ArticleRepository.InsertArticle(article);
             await _unitOfWork.Save();
             return _mapper.Map<ArticleDTO>(article);
@@ -53,9 +53,9 @@ namespace WebShop.Services
             }
         }
 
-        public async Task<List<ArticleDTO>> GetAllArticles()
+        public async Task<List<ArticleGetDTO>> GetAllArticles()
         {
-            return _mapper.Map<List<ArticleDTO>>(await _unitOfWork.ArticleRepository.GetAll());
+            return _mapper.Map<List<ArticleGetDTO>>(await _unitOfWork.ArticleRepository.GetAll());
         }
 
         public async Task<ArticleDTO> GetArticle(long id, long userId)
@@ -78,7 +78,20 @@ namespace WebShop.Services
             }
         }
 
-        public async Task<List<ArticleDTO>> GetSellerArticles(long id)
+        public async Task<ArticleImageDTO> GetArticleImage(long id)
+        {
+            var article = await _unitOfWork.ArticleRepository.GetById(id) ?? throw new NotFoundException("Article doesn't exist.");
+
+            byte[] imageBytes = await _unitOfWork.ArticleRepository.GetArticleImage(article.Id);
+
+            ArticleImageDTO articleImage = new ArticleImageDTO()
+            {
+                ImageBytes = imageBytes
+            };
+            return articleImage;
+        }
+
+        public async Task<List<ArticleGetDTO>> GetSellerArticles(long id)
         {
             var seller = await _unitOfWork.UserRepository.GetById(id);
             if (seller == null) { throw new NotFoundException("User doesn't exist."); }
@@ -86,7 +99,7 @@ namespace WebShop.Services
             {
                 throw new ConflictException("Seller isn't approved. Wait for admin approval!");
             }
-            else return _mapper.Map<List<ArticleDTO>>(await _unitOfWork.ArticleRepository.GetSellerArticles(id));
+            else return _mapper.Map<List<ArticleGetDTO>>(await _unitOfWork.ArticleRepository.GetSellerArticles(id));
         }
 
         public async Task<ArticleUpdateDTO> UpdateArticle(long id, ArticleUpdateDTO newArticle)

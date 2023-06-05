@@ -50,6 +50,7 @@ namespace WebShop.Services
             }
             else
             {
+                user.Denied = true;
                 var emailAddress = user.Email;
                 var message = new Message(new string[] { $"{emailAddress}" }, "Profile activation", "Your profile activation has been rejected. WebShop App.");
                 await _emailService.SendEmail(message);
@@ -113,13 +114,13 @@ namespace WebShop.Services
         public async Task<List<UserDTO>> GetAllUnactivatedSellers()
         {
             List<User> list = await _unitOfWork.UserRepository.GetAll();
-            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Approved == false && u.Type == UserType.Seller).ToList());
+            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Approved == false && u.Denied == false && u.Type == UserType.Seller).ToList());
         }
 
         public async Task<List<UserDTO>> GetSellers()
         {
             List<User> list = await _unitOfWork.UserRepository.GetAll();
-            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Approved == true && u.Type == UserType.Seller).ToList());
+            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Type == UserType.Seller).ToList());
         }
 
         public async Task<UserDTO> GetUser(long id)
@@ -198,6 +199,7 @@ namespace WebShop.Services
                 newUser.Approved = true;
             }
             newUser.ProfilePictureUrl = new byte[0];
+            newUser.Denied = false;
             await _unitOfWork.UserRepository.InsertUser(newUser);
 
             await _unitOfWork.Save();

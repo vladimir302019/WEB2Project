@@ -24,7 +24,7 @@ const Menu = () => {
     }
     const storeClickHandler = (event) => {
       event.preventDefault();
-
+      navigate('/store');
     }
     const ordersClickHandler = (event) => {
       event.preventDefault();

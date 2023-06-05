@@ -14,6 +14,7 @@ namespace WebShop.Models
         public string Address { get; set; }
         public UserType Type { get; set; }
         public bool Approved { get; set; }
+        public bool Denied { get; set; }
         public List<Order> Orders { get; set; }
         public List<Article> Articles { get; set; }
     }

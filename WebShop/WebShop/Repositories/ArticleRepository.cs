@@ -14,6 +14,12 @@ namespace WebShop.Repositories
             _context.Articles.Remove(_context.Articles.Find(id));
         }
 
+        public async Task<byte[]> GetArticleImage(long id)
+        {
+            Article article = await _context.Articles.FindAsync(id);
+            return article.PhotoUrl;
+        }
+
         public async Task<List<Article>> GetAll()
         {
             return await _context.Articles.ToListAsync();

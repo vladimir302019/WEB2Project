@@ -6,6 +6,7 @@ import SignIn from "../Components/SignIn/SignIn"
 import ProfilePage from "../Components/Profile/Profile";
 import Menu from "../Components/Menu/Menu";
 import AdminPanel from "../Components/AdminPanel/AdminPanel";
+import StorePanel from "../Components/Shop/StorePanel";
 
 const AppRoutes = () => {
     const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
@@ -20,7 +21,7 @@ const AppRoutes = () => {
             <>
             <Route path="/register" element={<Register/>}></Route>
             <Route path="/signin" element={<SignIn/>}></Route>
-            <Route path="*" element={<Navigate replace to={"/register"} />}></Route>
+            <Route path="*" element={<Navigate replace to={"/signin"} />}></Route>
             </>
             )}
             {isLoggedIn && (
@@ -33,6 +34,11 @@ const AppRoutes = () => {
             {isLoggedIn && isAdmin &&(
             <>
             <Route path="/adminPanel" element={<AdminPanel/>}></Route>
+            </>
+            )}
+            {isLoggedIn && (isAdmin || isBuyer) &&(
+            <>
+            <Route path="/store" element={<StorePanel/>}></Route>
             </>
             )}
         </Routes>

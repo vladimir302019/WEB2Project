@@ -20,8 +20,7 @@ const ProfilePage = () => {
   const [displayImage, setDisplayImage] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-
-  
+ 
   const handleOpenModal = () => {
     setModalOpen(true);
   };
@@ -216,47 +215,45 @@ const ProfilePage = () => {
                             initialValue={type}
                             editable={false}
                           ></ProfileFormField>
-                          {user.type === 0 && (
-                            <Button
-                            color={user.approved ? "success" : "error"}
-                            variant="contained"
+                          </Box>
+                          <Box
                             sx={{
-                              mt: 1,
-                              mb: 2,
-                              ml: 3,
-                              border: 1,
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: 4,
                             }}
                           >
-                            {user.approved ? 'APPROVED' : 'DENIED'}
-                          </Button>
-                          )}
-                        </Box>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center"
-                          }}
-                        >
-                        <Button
-                          color="secondary"
-                          variant="contained"
-                          onClick={handleOpenModal}
-                          sx={{
-                            mt: 9,
-                            mb: 2,
-                            ml: 1,
-                            border: 1,
-                            ":hover": {
-                              bgcolor: "#e0dcdc",
-                            },
-                          }}
-                        >
-                          Change password
-                        </Button>
+                            {user.type === 0 && (
+                              <Button
+                                color={user.approved ? "success" : "primary"}
+                                variant="contained"
+                                sx={{
+                                  width: '20rem',
+                                  border: 1,
+                                }}
+                              >
+                                { user.approved ? 'APPROVED' : (user.denied ? 'DENIED' : 'PENDING')}
+                              </Button>
+                            )}
+                            <Button
+                              color="secondary"
+                              variant="contained"
+                              onClick={handleOpenModal}
+                              sx={{
+                                border: 1,
+                                ":hover": {
+                                  bgcolor: "#e0dcdc",
+                                },
+                              }}
+                            >
+                              Change password
+                            </Button>
                         <MyModal open={modalOpen} onClose={handleCloseModal} onPasswordChange={handlePasswordChange}/>
-                        </Box>
+                        
                       </Box>
+                    </Box>
                     </Box>
                   </Grid>
                   <Grid item>

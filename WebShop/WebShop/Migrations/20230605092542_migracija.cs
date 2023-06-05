@@ -23,7 +23,8 @@ namespace WebShop.Migrations
                     ProfilePictureUrl = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
-                    Approved = table.Column<bool>(type: "bit", nullable: false)
+                    Approved = table.Column<bool>(type: "bit", nullable: false),
+                    Denied = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

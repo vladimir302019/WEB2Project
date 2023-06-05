@@ -23,7 +23,7 @@ namespace WebShop.Controllers
 
         [HttpGet("get")]
         [Authorize]
-        public async Task<IActionResult> Get([FromQuery] long id)
+        public async Task<IActionResult> Get([FromBody] long id)
         {
             return Ok(await _articleService.GetArticle(id, _userService.GetUserIdFromToken(User)));
         }
@@ -32,7 +32,7 @@ namespace WebShop.Controllers
         [Authorize(Roles = "Buyer, Admin")]
         public async Task<IActionResult> GetAll()
         {
-            List<ArticleDTO> articleDTOs = await _articleService.GetAllArticles();
+            List<ArticleGetDTO> articleDTOs = await _articleService.GetAllArticles();
             return Ok(articleDTOs);
         }
 
@@ -65,11 +65,21 @@ namespace WebShop.Controllers
         }
 
         [HttpPut("upload-image")]
+        [Consumes("multipart/form-data")]
         [Authorize(Roles = "Seller")]
         public async Task<IActionResult> UploadImage(long id,IFormFile file)
         {
             await _articleService.UploadImage(id, file);
             return Ok();
+        }
+
+
+        [HttpGet("get-image")]
+        [Authorize(Roles = "Admin, Buyer, Seller")]
+        public async Task<IActionResult> GetImage(long id)
+        {
+            ArticleImageDTO articleDTO = await _articleService.GetArticleImage(id);
+            return Ok(articleDTO);
         }
     }
 }

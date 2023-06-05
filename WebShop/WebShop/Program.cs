@@ -76,7 +76,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: _cors, builder =>
     {
-        builder.WithOrigins("http://localhost:4400")
+        builder.WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -118,8 +118,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    //app.UseSwagger();
-    //app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseMiddleware<ExceptionHandler>();
