@@ -16,27 +16,22 @@ namespace WebShop.Repositories
 
         public async Task<List<Order>> GetAll()
         {
-            List<Order> orders = await _context.Orders.Include(o => o.OrderItems).ThenInclude(oi => oi.Article).ToListAsync();
+            List<Order> orders = await _context.Orders.ToListAsync();
             return orders;
         }
 
         public async Task<Order> GetById(long id)
         {
-            var order = await _context.Orders.Where(o => o.Id == id)
-                                .Include(oi => oi.OrderItems)
-                                .ThenInclude(a => a.Article).FirstOrDefaultAsync();
-            return order;
+            return await _context.Orders.FindAsync(id);
         }
 
         public async Task<List<Order>> GetSellerOrders(long sellerId, bool old)
         {
             List<Order> orders = await _context.Orders.Where(o => o.Confirmed &&
                                 (old ? o.DeliveryDate < DateTime.Now : o.DeliveryDate > DateTime.Now))
-                                .Include(x => x.OrderItems.Where(oi => oi.Article.SellerId == sellerId))
-                                .ThenInclude(x => x.Article)
                                 .ToListAsync();
 
-            return orders.FindAll(o => o.OrderItems.FindAll(oi => oi.Article.SellerId == sellerId).Count != 0);
+            return orders;
         }
 
         public async Task<Order> InsertOrder(Order order)
@@ -50,6 +45,12 @@ namespace WebShop.Repositories
             Order newOrder = _context.Orders.Find(order.Id);
             newOrder = order;
             _context.Orders.Update(newOrder);
+        }
+
+        public async Task<long> GetNewestOrderId()
+        {
+            var orders = await _context.Orders.OrderByDescending(e => e.Id).ToListAsync();
+            return orders.FirstOrDefault().Id;
         }
     }
 }

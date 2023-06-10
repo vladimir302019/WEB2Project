@@ -21,7 +21,7 @@ namespace WebShop.Controllers
         }
 
         [HttpPut("new-order")]
-        [Authorize(Roles = "Buyer")]
+        [Authorize(Roles = "BUYER")]
         public async Task<IActionResult> NewOrder([FromBody] OrderDTO orderDTO)
         {
             return Ok(await _orderService.NewOrder(orderDTO, _userService.GetUserIdFromToken(User)));
@@ -35,45 +35,53 @@ namespace WebShop.Controllers
         }
 
         [HttpGet("get-orders")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetOrders()
         {
             return Ok(await _orderService.GetOrders());
         }
 
         [HttpGet("get-undelivered-orders")]
-        [Authorize(Roles = "Buyer")]
+        [Authorize(Roles = "BUYER")]
         public async Task<IActionResult> GetUndeliveredOrders()
         {
             return Ok(await _orderService.GetUndeliveredOrders(_userService.GetUserIdFromToken(User)));
         }
 
         [HttpGet("get-seller-new-orders")]
-        [Authorize(Roles = "Seller")]
+        [Authorize(Roles = "SELLER")]
         public async Task<IActionResult> GetSellerNewOrders()
         {
             return Ok(await _orderService.GetNewOrders(_userService.GetUserIdFromToken(User)));
         }
 
         [HttpGet("get-seller-old-orders")]
-        [Authorize(Roles = "Seller")]
+        [Authorize(Roles = "SELLER")]
         public async Task<IActionResult> GetSellerOldOrders()
         {
             return Ok(await _orderService.GetOldOrders(_userService.GetUserIdFromToken(User)));
         }
 
         [HttpGet("get-user-orders")]
-        [Authorize(Roles = "Buyer")]
+        [Authorize(Roles = "BUYER")]
         public async Task<IActionResult> GetUserOrders()
         {
             return Ok(await _orderService.GetUserOrders(_userService.GetUserIdFromToken(User)));
         }
 
         [HttpPut("cancel-order")]
-        [Authorize(Roles = "Buyer")]
+        [Authorize(Roles = "BUYER")]
         public async Task<IActionResult> CancelOrder([FromBody] long orderId)
         {
             return Ok(await _orderService.CancelOrder(orderId));
+        }
+
+        [HttpPut("add-order-items")]
+        [Authorize(Roles = "BUYER")]
+        public async Task<IActionResult> AddItemsToOrder([FromBody] OrderItemsDTO itemsOrderDTO)
+        {
+            await _orderService.AddOrderItems(itemsOrderDTO.OrderId, itemsOrderDTO.OrderItems);
+            return Ok();
         }
     }
 }

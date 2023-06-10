@@ -111,15 +111,23 @@ namespace WebShop.Migrations
                     b.Property<long>("ArticleId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("float");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<long>("SellerId")
+                        .HasColumnType("bigint");
 
-                    b.HasIndex("ArticleId");
+                    b.HasKey("Id");
 
                     b.HasIndex("OrderId");
 
@@ -209,26 +217,13 @@ namespace WebShop.Migrations
 
             modelBuilder.Entity("WebShop.Models.OrderItem", b =>
                 {
-                    b.HasOne("WebShop.Models.Article", "Article")
-                        .WithMany("Items")
-                        .HasForeignKey("ArticleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("WebShop.Models.Order", "Order")
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Article");
-
                     b.Navigation("Order");
-                });
-
-            modelBuilder.Entity("WebShop.Models.Article", b =>
-                {
-                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("WebShop.Models.Order", b =>

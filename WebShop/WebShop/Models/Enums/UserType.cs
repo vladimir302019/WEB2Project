@@ -2,6 +2,6 @@
 {
     public enum UserType
     {
-        Seller, Buyer, Admin
+        SELLER, BUYER, ADMIN
     }
 }

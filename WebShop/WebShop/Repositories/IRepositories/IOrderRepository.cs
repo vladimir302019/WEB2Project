@@ -10,5 +10,6 @@ namespace WebShop.Repositories.IRepositories
         void DeleteOrder(long id);
         void UpdateOrder(Order order);
         Task<List<Order>> GetSellerOrders(long sellerId, bool old);
+        Task<long> GetNewestOrderId();
     }
 }

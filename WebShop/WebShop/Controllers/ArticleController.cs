@@ -29,7 +29,7 @@ namespace WebShop.Controllers
         }
 
         [HttpGet("get-all")]
-        [Authorize(Roles = "Buyer, Admin")]
+        [Authorize(Roles = "BUYER, ADMIN")]
         public async Task<IActionResult> GetAll()
         {
             List<ArticleGetDTO> articleDTOs = await _articleService.GetAllArticles();
@@ -37,28 +37,28 @@ namespace WebShop.Controllers
         }
 
         [HttpPut("new-article")]
-        [Authorize(Roles = "Seller")]
+        [Authorize(Roles = "SELLER")]
         public async Task<IActionResult> NewArticle([FromBody] ArticleDTO articleDTO)
         {
             return Ok(await _articleService.AddNewArticle(articleDTO, _userService.GetUserIdFromToken(User)));
         }
 
         [HttpPut("update-article")]
-        [Authorize(Roles = "Seller")]
+        [Authorize(Roles = "SELLER")]
         public async Task<IActionResult> UpdateArticle([FromBody] ArticleUpdateDTO articleDTO)
         {
             return Ok(await _articleService.UpdateArticle(articleDTO.Id, articleDTO));
         }
 
         [HttpDelete("delete")]
-        [Authorize(Roles = "Seller")]
+        [Authorize(Roles = "SELLER")]
         public async Task<IActionResult> DeleteArticle([FromBody] long id)
         {
             return Ok(await _articleService.DeleteArticle(id));
         }
 
         [HttpGet("seller-get")]
-        [Authorize(Roles = "Seller")]
+        [Authorize(Roles = "SELLER")]
         public async Task<IActionResult> GetSellerArticles()
         {
             return Ok(await _articleService.GetSellerArticles(_userService.GetUserIdFromToken(User)));
@@ -66,7 +66,7 @@ namespace WebShop.Controllers
 
         [HttpPut("upload-image")]
         [Consumes("multipart/form-data")]
-        [Authorize(Roles = "Seller")]
+        [Authorize(Roles = "SELLER")]
         public async Task<IActionResult> UploadImage(long id,IFormFile file)
         {
             await _articleService.UploadImage(id, file);
@@ -75,7 +75,7 @@ namespace WebShop.Controllers
 
 
         [HttpGet("get-image")]
-        [Authorize(Roles = "Admin, Buyer, Seller")]
+        [Authorize(Roles = "ADMIN, BUYER, SELLER")]
         public async Task<IActionResult> GetImage(long id)
         {
             ArticleImageDTO articleDTO = await _articleService.GetArticleImage(id);

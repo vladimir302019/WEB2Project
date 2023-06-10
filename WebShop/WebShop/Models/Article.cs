@@ -10,6 +10,5 @@
         public User Seller { get; set; }
         public int MaxQuantity { get; set; }
         public byte[] PhotoUrl { get; set; }
-        public List<OrderItem> Items { get; set; }
     }
 }

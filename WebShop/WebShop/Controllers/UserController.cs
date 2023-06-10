@@ -40,7 +40,7 @@ namespace WebShop.Controllers
         }
 
         [HttpGet("user")]
-        [Authorize(Roles = "Admin, Buyer, Seller")]
+        [Authorize(Roles = "ADMIN, BUYER, SELLER")]
         public async Task<IActionResult> GetUser()
         {
             UserDTO userDTO = await _userService.GetUser(_userService.GetUserIdFromToken(User));
@@ -49,7 +49,7 @@ namespace WebShop.Controllers
         }
 
         [HttpGet("activated-sellers")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetActivatedSellers()
         {
             return Ok(await _userService.GetSellers());
@@ -57,24 +57,24 @@ namespace WebShop.Controllers
         }
 
         [HttpGet("unactivated-sellers")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
 
         public async Task<IActionResult> GetUnactivatedSellers()
         {
             return Ok(await _userService.GetAllUnactivatedSellers());
 
         }
-        //update
+        
         [HttpPut("update-profile")]
-        [Authorize(Roles = "Admin, Buyer, Seller")]
+        [Authorize(Roles = "ADMIN, BUYER, SELLER")]
         public async Task<IActionResult> UpdateProfile([FromForm] UserUpdateDTO user)
         {
             return Ok(await _userService.UpdateUser(_userService.GetUserIdFromToken(User), user));
 
         }
-        //activate
+        
         [HttpPut("activate-user")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> ActivateUser([FromBody] ActivateUserDTO user)
         {
             return Ok(await _userService.ActivateUser(user.Id, user.IsActive));
@@ -83,7 +83,7 @@ namespace WebShop.Controllers
 
         [HttpPut("upload-image")]
         [Consumes("multipart/form-data")]
-        [Authorize(Roles = "Admin, Buyer, Seller")]
+        [Authorize(Roles = "ADMIN, BUYER, SELLER")]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
             await _userService.UploadImage(_userService.GetUserIdFromToken(User), file);
@@ -91,7 +91,7 @@ namespace WebShop.Controllers
         }
 
         [HttpGet("get-image")]
-        [Authorize(Roles = "Admin, Buyer, Seller")]
+        [Authorize(Roles = "ADMIN, BUYER, SELLER")]
         public async Task<IActionResult> GetImage()
         {
             UserImageDTO userDTO = await _userService.GetUserImage(_userService.GetUserIdFromToken(User));
@@ -99,7 +99,7 @@ namespace WebShop.Controllers
         }
 
         [HttpPost("change-password")]
-        [Authorize(Roles = "Admin, Buyer, Seller")]
+        [Authorize(Roles = "ADMIN, BUYER, SELLER")]
         public async Task<IActionResult> ChangePassword([FromForm] UserPasswordDTO userPasswordDTO)
         {
             await _userService.ChangePassword(_userService.GetUserIdFromToken(User), userPasswordDTO.OldPassword, userPasswordDTO.NewPassword);

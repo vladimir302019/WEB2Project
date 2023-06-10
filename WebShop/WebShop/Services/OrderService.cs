@@ -48,12 +48,24 @@ namespace WebShop.Services
 
         public async Task<OrderAllDTO> GetOrder(long orderId)
         {
-            return _mapper.Map<OrderAllDTO>(await _unitOfWork.OrderRepository.GetById(orderId));
+            Order order = await _unitOfWork.OrderRepository.GetById(orderId);
+            order.OrderItems = await GetItemsForOrderId(orderId);
+            return _mapper.Map<OrderAllDTO>(order);
+        }
+        private async Task<List<OrderItem>> GetItemsForOrderId(long id)
+        {
+            List<OrderItem> lista = await _unitOfWork.OrderItemRepository.GetAll();
+            return lista.Where(oi => oi.OrderId == id).ToList();
         }
 
         public async Task<List<OrderAdminDTO>> GetOrders()
         {
-            return _mapper.Map<List<OrderAdminDTO>>(await _unitOfWork.OrderRepository.GetAll());
+            var orders = await _unitOfWork.OrderRepository.GetAll();
+            foreach (var order in orders)
+            {
+                order.OrderItems = await GetItemsForOrderId(order.Id);
+            }
+            return _mapper.Map<List<OrderAdminDTO>>(orders);
         }
 
         public async Task<List<OrderAllDTO>> GetUserOrders(long userId)
@@ -62,7 +74,12 @@ namespace WebShop.Services
 
             if (user == null) { throw new NotFoundException("User doesn't exist."); }
             List<Order> lista = await _unitOfWork.OrderRepository.GetAll();
-            user.Orders = lista.Where(o => o.BuyerId == user.Id).ToList();
+            var userOrders = lista.Where(o => o.BuyerId == user.Id).ToList();
+            foreach (var order in userOrders)
+            {
+                order.OrderItems = await GetItemsForOrderId(order.Id);
+            }
+            user.Orders = userOrders;
             return _mapper.Map<List<OrderAllDTO>>(user.Orders.Where(order => order.DeliveryDate < DateTime.Now && order.Confirmed));
         }
 
@@ -71,8 +88,12 @@ namespace WebShop.Services
             var user = await _unitOfWork.UserRepository.GetById(userId);
 
             if (user == null) { throw new NotFoundException("User doesn't exist."); }
-
-            return _mapper.Map<List<OrderAllDTO>>(await _unitOfWork.OrderRepository.GetSellerOrders(userId, false));
+            var sellerOrders = await _unitOfWork.OrderRepository.GetSellerOrders(userId, false);
+            foreach (var sellerOrder in sellerOrders)
+            {
+                sellerOrder.OrderItems = await GetItemsForOrderId(sellerOrder.Id);
+            }
+            return _mapper.Map<List<OrderAllDTO>>(sellerOrders);
         }
 
         public async Task<List<OrderAllDTO>> GetUndeliveredOrders(long userId)
@@ -82,10 +103,14 @@ namespace WebShop.Services
             if (user == null) { throw new NotFoundException("User doesn't exist."); }
             List<Order> lista = await _unitOfWork.OrderRepository.GetAll();
             user.Orders = lista.Where(o => o.BuyerId == user.Id).ToList();
+            foreach (var order in user.Orders)
+            {
+                order.OrderItems = await GetItemsForOrderId(order.Id);
+            }
             return _mapper.Map<List<OrderAllDTO>>(user.Orders.Where(order => order.DeliveryDate > DateTime.Now && order.Confirmed));
         }
 
-        public async Task<OrderDTO> NewOrder(OrderDTO orderDTO, long buyerId)
+        public async Task<long> NewOrder(OrderDTO orderDTO, long buyerId)
         {
             var user = await _unitOfWork.UserRepository.GetById(buyerId);
             if (user == null) { throw new NotFoundException("User doesn't exist."); }
@@ -93,22 +118,85 @@ namespace WebShop.Services
             Order newOrder = _mapper.Map<Order>(orderDTO);
 
             newOrder.Confirmed = true;
-            newOrder.Buyer = user;
             newOrder.BuyerId = user.Id;
+
             Random random = new Random();
             int minutes = random.Next(65, 180);
             newOrder.DeliveryDate = DateTime.Now.AddMinutes(minutes);
 
-            List<Article> list = await _unitOfWork.ArticleRepository.GetAll();
+
+            await _unitOfWork.OrderRepository.InsertOrder(newOrder);
+            await _unitOfWork.Save();
+
+            var lastOrder = await _unitOfWork.OrderRepository.GetNewestOrderId();
+
+
+            return lastOrder;
+        }
+
+        public async Task<List<OrderAllDTO>> GetOldOrders(long userId)
+        {
+            var user = await _unitOfWork.UserRepository.GetById(userId);
+
+            if (user == null) { throw new NotFoundException("User doesn't exist"); }
+            var sellerOrders = await _unitOfWork.OrderRepository.GetSellerOrders(userId, true);
+            foreach (var sellerOrder in sellerOrders)
+            {
+                sellerOrder.OrderItems = await GetItemsForOrderId(sellerOrder.Id);
+            }
+            return _mapper.Map<List<OrderAllDTO>>(sellerOrders);
+        }
+
+        public async Task AddOrderItems(long orderId, List<OrderItemDTO> orderItems)
+        {
+            Order o = await _unitOfWork.OrderRepository.GetById(orderId);
+            if (o == null) { throw new ConflictException("Order doesn't exist!"); }
+
+            List<Article> articleList = await _unitOfWork.ArticleRepository.GetAll();
+            List<OrderItem> orders = new List<OrderItem>();
+
+            foreach (var oItem in orderItems)
+            {
+                orders.Add(_mapper.Map<OrderItem>(oItem));
+            }
+
+            foreach (var item in articleList)
+            {
+                foreach (var oItem in orders)
+                {
+                    oItem.OrderId = orderId;
+                }
+            }
+            o.OrderItems = orders;
+
+
+            foreach (var item in orders)
+            {
+                await _unitOfWork.OrderItemRepository.InsertOrderItem(item);
+            }
             List<User> allSellers = await _unitOfWork.UserRepository.GetAll();
-            allSellers = allSellers.Where(s => s.Type == UserType.Seller).ToList();
+            allSellers = allSellers.Where(s => s.Type == UserType.SELLER).ToList();
+
+
+            foreach (var item in articleList)
+            {
+                foreach (var oItem in orders)
+                {
+                    if (oItem.ArticleId == item.Id)
+                    {
+                        oItem.Name = item.Name;
+                        oItem.Price = item.Price;
+                        oItem.SellerId = item.SellerId;
+                    }
+                }
+            }
             List<long> ids = new List<long>();
             List<User> sellers = new List<User>();
-            foreach (var item in newOrder.OrderItems)
+
+            foreach (var item in o.OrderItems)
             {
-                newOrder.TotalPrice += item.Article.Price;
-                ids.Add(item.Article.SellerId);
-                foreach (var article in list)
+                ids.Add(item.SellerId);
+                foreach (var article in articleList)
                 {
                     if (item.ArticleId == article.Id)
                     {
@@ -119,7 +207,7 @@ namespace WebShop.Services
                     }
                 }
             }
-            foreach(var seller in allSellers)
+            foreach (var seller in allSellers)
             {
                 if (ids.Contains(seller.Id))
                 {
@@ -129,21 +217,10 @@ namespace WebShop.Services
                     }
                 }
             }
-            newOrder.TotalPrice += 230 * sellers.Count();
-            user.Orders.Add(newOrder);
-            await _unitOfWork.OrderRepository.InsertOrder(newOrder);
+            o.TotalPrice += 230 * sellers.Count();
+
+            _unitOfWork.OrderRepository.UpdateOrder(o);
             await _unitOfWork.Save();
-
-            return _mapper.Map<OrderDTO>(newOrder);
-        }
-
-        public async Task<List<OrderAllDTO>> GetOldOrders(long userId)
-        {
-            var user = await _unitOfWork.UserRepository.GetById(userId);
-
-            if (user == null) { throw new NotFoundException("User doesn't exist"); }
-
-            return _mapper.Map<List<OrderAllDTO>>(await _unitOfWork.OrderRepository.GetSellerOrders(userId, true));
         }
     }
 }

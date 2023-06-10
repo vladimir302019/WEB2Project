@@ -31,10 +31,19 @@ namespace WebShop.Services
 
             if (!seller.Approved)
             {
-                throw new ConflictException("Seller isn't approved. Wait for admin approval!");
+                throw new ConflictException("SELLER isn't approved. Wait for admin approval!");
             }
 
             article = _mapper.Map<Article>(newArticle);
+            article = _mapper.Map<Article>(newArticle);
+            using (var ms = new MemoryStream())
+            {
+                newArticle.PhotoUrl.CopyTo(ms);
+                var fileBytes = ms.ToArray();
+
+                article.PhotoUrl = fileBytes;
+                _unitOfWork.ArticleRepository.UpdateArticle(article);
+            }
             article.SellerId = sellerId;
             await _unitOfWork.ArticleRepository.InsertArticle(article);
             await _unitOfWork.Save();
@@ -64,11 +73,11 @@ namespace WebShop.Services
             if (article == null) { throw new NotFoundException("Article doesn't exist."); }
 
             User user = await _unitOfWork.UserRepository.GetById(userId);
-            if(user.Type == UserType.Buyer)
+            if(user.Type == UserType.BUYER)
             {
                 return _mapper.Map<ArticleDTO>(article);
             }
-            if(user.Type == UserType.Seller && user.Id == article.SellerId) 
+            if(user.Type == UserType.SELLER && user.Id == article.SellerId) 
             {
                 return _mapper.Map<ArticleDTO>(article);
             }
@@ -97,7 +106,7 @@ namespace WebShop.Services
             if (seller == null) { throw new NotFoundException("User doesn't exist."); }
             if (!seller.Approved)
             {
-                throw new ConflictException("Seller isn't approved. Wait for admin approval!");
+                throw new ConflictException("SELLER isn't approved. Wait for admin approval!");
             }
             else return _mapper.Map<List<ArticleGetDTO>>(await _unitOfWork.ArticleRepository.GetSellerArticles(id));
         }
@@ -109,17 +118,12 @@ namespace WebShop.Services
 
             string name = article.Name;
             long ids = article.SellerId;
+
+            var photo = article.PhotoUrl;
             article = _mapper.Map<Article>(newArticle);
             article.Name = name;
             article.SellerId = ids;
-            
-            using(var ms = new MemoryStream())
-            {
-                newArticle.PhotoUrl.CopyTo(ms);
-                var fileBytes = ms.ToArray();
-
-                article.PhotoUrl = fileBytes;
-            }
+            article.PhotoUrl = photo;
 
             _unitOfWork.ArticleRepository.UpdateArticle(article);
             await _unitOfWork.Save();

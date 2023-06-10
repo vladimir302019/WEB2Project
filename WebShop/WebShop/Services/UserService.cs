@@ -80,7 +80,7 @@ namespace WebShop.Services
                     Password = "",
                     Address = "",
                     BirthDate = DateTime.Now,
-                    Type = UserType.Buyer,
+                    Type = UserType.BUYER,
                     Approved = true
                 };
 
@@ -90,7 +90,7 @@ namespace WebShop.Services
 
             List<Claim> userClaims = new List<Claim>();
 
-            userClaims.Add(new Claim(ClaimTypes.Role, "Buyer"));
+            userClaims.Add(new Claim(ClaimTypes.Role, "BUYER"));
             
             userClaims.Add(new Claim(ClaimTypes.Name, user.Id.ToString()));
 
@@ -114,13 +114,13 @@ namespace WebShop.Services
         public async Task<List<UserDTO>> GetAllUnactivatedSellers()
         {
             List<User> list = await _unitOfWork.UserRepository.GetAll();
-            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Approved == false && u.Denied == false && u.Type == UserType.Seller).ToList());
+            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Approved == false && u.Denied == false && u.Type == UserType.SELLER).ToList());
         }
 
         public async Task<List<UserDTO>> GetSellers()
         {
             List<User> list = await _unitOfWork.UserRepository.GetAll();
-            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Type == UserType.Seller).ToList());
+            return _mapper.Map<List<UserDTO>>(list.Where(u => u.Type == UserType.SELLER).ToList());
         }
 
         public async Task<UserDTO> GetUser(long id)
@@ -148,17 +148,17 @@ namespace WebShop.Services
             {
                 List<Claim> userClaims = new List<Claim>();
 
-                if (user1.Type.ToString() == "Admin")
+                if (user1.Type.ToString() == "ADMIN")
                 {
-                    userClaims.Add(new Claim(ClaimTypes.Role, "Admin"));
+                    userClaims.Add(new Claim(ClaimTypes.Role, "ADMIN"));
                 }
-                if (user1.Type.ToString() == "Seller")
+                if (user1.Type.ToString() == "SELLER")
                 {
-                    userClaims.Add(new Claim(ClaimTypes.Role, "Seller"));
+                    userClaims.Add(new Claim(ClaimTypes.Role, "SELLER"));
                 }
-                if (user1.Type.ToString() == "Buyer")
+                if (user1.Type.ToString() == "BUYER")
                 {
-                    userClaims.Add(new Claim(ClaimTypes.Role, "Buyer"));
+                    userClaims.Add(new Claim(ClaimTypes.Role, "BUYER"));
                 }
                 userClaims.Add(new Claim(ClaimTypes.Name, user1.Id.ToString()));
 
@@ -190,7 +190,7 @@ namespace WebShop.Services
             User newUser = _mapper.Map<User>(user);
             newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
 
-            if (newUser.Type.ToString() == "Seller")
+            if (newUser.Type.ToString() == "SELLER")
             {
                 newUser.Approved = false;
             }
@@ -226,15 +226,6 @@ namespace WebShop.Services
             u.ProfilePictureUrl = profilePicUrl;
             u.Id = id;
             u.Approved = approved;
-            //u.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-            /*
-            using(var ms = new MemoryStream())
-            {
-                user.ProfilePictureUrl.CopyTo(ms);
-                var fileBytes = ms.ToArray();
-
-                u.ProfilePictureUrl = fileBytes;
-            }*/
 
             _unitOfWork.UserRepository.UpdateUser(u);
             await _unitOfWork.Save();
