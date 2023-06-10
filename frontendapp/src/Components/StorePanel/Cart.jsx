@@ -1,23 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { removeFromCart } from '../../Store/cartSlice';
 
-const Cart = ({cartArticles}) => {
-  const [cartItems, setCartItems] = useState([]);
-  useEffect(()=> {
-    setCartItems([...cartArticles]);
+const Cart = ({}) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state)=>state.cart.cartArticles);
+  const totalPrice = useSelector((state)=>state.cart.totalPrice);
+ 
+  const handleCheckout = () => {
+    navigate('/checkout');
+  }
 
-  }, [cartArticles]);
-
-  const calculateTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
-
+  const handleRemoveArticle = (article) => {
+    dispatch(removeFromCart(article));
+  }
+  console.log(cartItems);
   return (
-    <Grid item xs={12} md={4} lg={3}>
+    <Grid item xs={12} md={4} lg={4}>
       <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
         <Typography variant="h6" sx={{ mb: 2 }}>
           Cart
@@ -36,7 +41,7 @@ const Cart = ({cartArticles}) => {
                   sx={{ textAlign: 'right' }}>Quantity: {article.quantity}</Typography>
               </div>
               <div>
-                <Button color='error'>Remove</Button>
+                <Button color='error' onClick={()=> handleRemoveArticle(article)}>Remove</Button>
               </div>
             </div>
           </Grid>
@@ -48,7 +53,7 @@ const Cart = ({cartArticles}) => {
             </Typography>
           </Grid>
           <Grid item xs={4} textAlign="right">
-            <Typography variant="h5">{calculateTotalPrice()}</Typography>
+            <Typography variant="h5">{totalPrice}</Typography>
           </Grid>
           <Grid item xs={12}>
             <Typography variant="body2" color="textSecondary" textAlign="left">
@@ -57,7 +62,7 @@ const Cart = ({cartArticles}) => {
           </Grid>
         </Grid>
 
-        <Button variant="contained" color="primary" sx={{ mt: 2 }}>
+        <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleCheckout}>
           Checkout
         </Button>
       </Paper>

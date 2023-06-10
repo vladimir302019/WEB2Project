@@ -6,12 +6,15 @@ import SignIn from "../Components/SignIn/SignIn"
 import ProfilePage from "../Components/Profile/Profile";
 import Menu from "../Components/Menu/Menu";
 import AdminPanel from "../Components/AdminPanel/AdminPanel";
-import StorePanel from "../Components/Shop/StorePanel";
+import StorePanel from "../Components/StorePanel/StorePanel";
+import Checkout from "../Components/StorePanel/Checkout/Checkout";
+import SellerPanel from "../Components/SellerPanel/SellerPanel";
+import OrdersPanel from "../Components/OrdersPanel/OrdersPanel";
 
 const AppRoutes = () => {
     const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
     const user = useSelector((state) => state.user.user);
-    const isApprovedSeller = user && user.type === 0 && user.Approved === 1;
+    const isApprovedSeller = user && user.type === 0 && user.approved;
     const isBuyer = user && user.type === 1;
     const isAdmin = user && user.type === 2;
 
@@ -28,6 +31,7 @@ const AppRoutes = () => {
             <>
             <Route path="/profile" element={<ProfilePage/>}></Route>
             <Route path="/menu" element={<Menu/>}></Route>
+            <Route path="/orders" element={<OrdersPanel/>}></Route>
             <Route path="" element={<Navigate replace to={"/menu"} />}></Route>
             </>
             )}
@@ -39,6 +43,16 @@ const AppRoutes = () => {
             {isLoggedIn && (isAdmin || isBuyer) &&(
             <>
             <Route path="/store" element={<StorePanel/>}></Route>
+            </>
+            )}
+            {isLoggedIn && isBuyer && (
+            <>
+            <Route path="/checkout" element={<Checkout/>}></Route>
+            </>
+            )}
+            {isLoggedIn && isApprovedSeller && (
+            <>
+            <Route path="/sellerPanel" element={<SellerPanel/>}/>
             </>
             )}
         </Routes>

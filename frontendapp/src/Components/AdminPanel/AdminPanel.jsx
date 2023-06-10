@@ -37,8 +37,8 @@ export default function AdminPanel() {
         console.log(`Deny user with id ${id}`);
     };
 
-    const verify = async (requestBody) => {
-        await dispatch(approveSellerAction(requestBody));
+    const verify = (requestBody) => {
+        dispatch(approveSellerAction(requestBody));
         setIsInitial(true);
     }
 
@@ -47,15 +47,15 @@ export default function AdminPanel() {
       return;
     }
 
-    const execute = async () => {
-      await dispatch(getInactiveSellersAction());
-      await dispatch(getActiveSellersAction());
+    const execute =  () => {
+      dispatch(getInactiveSellersAction());
+      dispatch(getActiveSellersAction());
     };
 
     execute();
     setIsInitial(false);
 
-  }, [isInitial, dispatch]);
+  }, [isInitial]);
 
   if(!inactiveSellers){
     return <div>Loading...</div>
@@ -79,7 +79,7 @@ export default function AdminPanel() {
         <TableBody>
           {inactiveSellers.map((seller) => (
             <TableRow key={seller.id} >
-              <TableCell>{seller.fullName}</TableCell>
+              <TableCell>{seller.name}</TableCell>
               <TableCell>{seller.username}</TableCell>
               <TableCell>{seller.email}</TableCell>
               <TableCell align="right">
@@ -123,10 +123,10 @@ export default function AdminPanel() {
               <TableBody>
                 {allSellers.map((seller) => (
                   <TableRow key={seller.id}>
-                    <TableCell>{seller.fullName}</TableCell>
+                    <TableCell>{seller.name}</TableCell>
                     <TableCell>{seller.username}</TableCell>
                     <TableCell>{seller.email}</TableCell>
-                    <TableCell>{seller.approved ? 'APPROVED' : (seller.denied ? 'DENIED' : 'PENDING') }</TableCell>  
+                    <TableCell>{seller.approved ? 'APPROVED' : (seller.denied ? 'DENIED' : 'PENDING')}</TableCell>  
                   </TableRow>
                 ))}
               </TableBody>

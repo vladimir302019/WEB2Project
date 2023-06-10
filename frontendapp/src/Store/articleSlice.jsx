@@ -22,7 +22,7 @@ export const getAllArticlesAction = createAsyncThunk(
 );
 
 export const getSellerArticlesAction = createAsyncThunk(
-    "articles/seller-get",
+    "article/seller-get",
     async(data,thunkApi) => {
         try{
             const response = await GetSellerArticles();
@@ -34,7 +34,7 @@ export const getSellerArticlesAction = createAsyncThunk(
 );
 
 export const newArticleAction = createAsyncThunk(
-    "articles/new-article",
+    "article/new-article",
     async(data,thunkApi) => {
         try{
             const response = await NewArticle(data);
@@ -46,7 +46,7 @@ export const newArticleAction = createAsyncThunk(
 );
 
 export const deleteArticleAction = createAsyncThunk(
-    "articles/delete",
+    "article/delete",
     async(data,thunkApi) => {
         try{
             const response = await DeleteArticle(data);
@@ -58,7 +58,7 @@ export const deleteArticleAction = createAsyncThunk(
 );
 
 export const updateArticleAction = createAsyncThunk(
-    "articles/update-article",
+    "article/update-article",
     async(data,thunkApi) => {
         try{
             const response = await UpdateArticle(data);
@@ -70,7 +70,7 @@ export const updateArticleAction = createAsyncThunk(
 );
 
 export const uploadArticleImageAction = createAsyncThunk(
-    "articles/upload-image",
+    "article/upload-image",
     async(data,thunkApi) => {
         try{
             const response = await UploadArticleImage(data);
@@ -82,7 +82,7 @@ export const uploadArticleImageAction = createAsyncThunk(
 );
 
 export const getArticleImageAction = createAsyncThunk(
-    "articles/get-image",
+    "article/get-image",
     async(data,thunkApi) => {
         try{
             const response = await GetArticleImage(data);
