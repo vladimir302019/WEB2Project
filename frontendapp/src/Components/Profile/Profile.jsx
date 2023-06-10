@@ -118,7 +118,7 @@ const ProfilePage = () => {
     }
 
     const data = new FormData();
-    data.append("name", name);
+    data.append("fullName", name);
     data.append("username", username);
     data.append("email", email);
 
@@ -273,7 +273,7 @@ const ProfilePage = () => {
                           <ProfileFormField
                             id="name"
                             label="Full name"
-                            initialValue={user.name}
+                            initialValue={user.fullName}
                             editable={editable}
                           />
                           <ProfileFormField

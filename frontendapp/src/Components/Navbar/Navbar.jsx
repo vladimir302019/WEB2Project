@@ -86,7 +86,7 @@ const Navbar = () => {
         {((isSeller && !isNotApprovedSeller) || isAdmin || isBuyer ) &&<IconButton color="inherit">
           <Assignment fontSize="large" onClick={handleOrdersClick}/>
         </IconButton>}
-        {isSeller && !isBuyer && !isAdmin &&(
+        {isSeller && !isNotApprovedSeller && !isBuyer && !isAdmin &&(
         <IconButton color="inherit">
           <PostAddIcon fontSize="large" onClick={handleSellerPanelClick}/>
         </IconButton>
