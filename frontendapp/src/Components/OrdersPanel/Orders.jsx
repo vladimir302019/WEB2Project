@@ -23,7 +23,17 @@ function Row(props) {
   const dispatch = useDispatch();
   const { row } = props;
   const [open, setOpen] = React.useState(false);
+  const [remainingHours, setRemainingHours] = useState(0); // State variable to store the remaining hours
+
+  const handleCountdownComplete = () => {
+    // Countdown completed, update the remaining hours in the parent component
+    setRemainingHours(0);
+  };
   
+  const handleRemainingHoursChange = (hours) => {
+    // Update the remaining hours in the parent component
+    setRemainingHours(hours);
+  };
 const handleCancelClick = (id) => {
   const data = new FormData();
   data.append("orderId", id);
@@ -48,8 +58,9 @@ const handleCancelClick = (id) => {
         <TableCell align="right">{row.totalPrice}</TableCell>
         <TableCell>{row.confirmed ? 'Confirmed' : 'Not Confirmed'}</TableCell>
         <TableCell>{new Date(row.deliveryDate).toLocaleString()}</TableCell>
-      {props.undelivered &&  <TableCell>{<DeliveryCountdown deliveryTime ={new Date(row.deliveryDate)}/>}</TableCell>}
-        {props.isBuyer && (<TableCell><Button color='error' variant='contained' onClick={() => handleCancelClick(row.id, props.handleUpdateOrders)}>Cancel order</Button></TableCell>)}
+      {props.undelivered &&  <TableCell>{<DeliveryCountdown deliveryTime ={new Date(row.deliveryDate)}  onCountdownComplete={handleCountdownComplete} onRemainingHoursChange={handleRemainingHoursChange}/>}</TableCell>}
+        {props.isBuyer && (<TableCell><Button disabled={remainingHours < 1}
+        color='error' variant='contained' onClick={() => handleCancelClick(row.id, props.handleUpdateOrders)}>Cancel order</Button></TableCell>)}
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>

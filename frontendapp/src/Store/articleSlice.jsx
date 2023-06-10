@@ -136,7 +136,7 @@ const articleSlice = createSlice({
         });
 
         builder.addCase(newArticleAction.fulfilled, (state, action)=> {
-            toast.error("New article successfully created!",{
+            toast.success("New article successfully created!",{
                 position: "top-center",
                 autoClose: 2500,
                 closeOnClick: true,
@@ -156,7 +156,7 @@ const articleSlice = createSlice({
         });
 
         builder.addCase(updateArticleAction.fulfilled, (state, action)=> {
-            toast.error("Updated article successfully!",{
+            toast.success("Updated article successfully!",{
                 position: "top-center",
                 autoClose: 2500,
                 closeOnClick: true,
@@ -176,7 +176,7 @@ const articleSlice = createSlice({
         });
 
         builder.addCase(deleteArticleAction.fulfilled, (state, action)=> {
-            toast.error("Article successfully deleted!",{
+            toast.success("Article successfully deleted!",{
                 position: "top-center",
                 autoClose: 2500,
                 closeOnClick: true,
@@ -196,7 +196,7 @@ const articleSlice = createSlice({
         });
 
         builder.addCase(uploadArticleImageAction.fulfilled, (state, action)=> {
-            toast.error("New image for article successfully uploaded!",{
+            toast.success("New image for article successfully uploaded!",{
                 position: "top-center",
                 autoClose: 2500,
                 closeOnClick: true,

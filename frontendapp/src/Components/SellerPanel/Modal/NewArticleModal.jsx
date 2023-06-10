@@ -1,6 +1,6 @@
 import React from 'react'
-import { newArticleAction, uploadArticleImageAction } from '../../../Store/articleSlice';
-import { useState, useRef, useEffect } from 'react';
+import { newArticleAction } from '../../../Store/articleSlice';
+import { useState, useRef } from 'react';
 import { Button, Modal, TextField } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import Box from '@mui/material/Box';
@@ -46,7 +46,7 @@ export default function NewArticleModal({open, onClose,}) {
     const [price, setPrice] = useState(0);
     const [uploadFile, setUploadFile] = useState(null);
     const [displayImage, setDisplayImage] = useState(null);
-    const imgUrl = process.env.PUBLIC_URL + '/no-image.jpg';
+    const imgUrl = process.env.PUBLIC_URL + '/no-image.png';
       
       const handleDescriptionChange = (newDescription) => {
         setIsDescriptionValid(newDescription.trim().length > 0);
@@ -123,7 +123,7 @@ export default function NewArticleModal({open, onClose,}) {
               dispatch(newArticleAction(formData))
                 .unwrap()
                 .then(() => {
-                    setDisplayImage(null);
+                    setDisplayImage(imgUrl);
                     onClose();
                 })
                 .catch((error) => {
@@ -166,9 +166,9 @@ export default function NewArticleModal({open, onClose,}) {
                             label="Name" id="name" margin="normal" onChange={(e) => handleNameChange(e.target.value)} />
                             <TextField onBlur={handleDescriptionBlur} error={!isDescriptionValid && isDescriptionBlur}
                             label="Description" id="description" margin="normal"  onChange={(e) => handleDescriptionChange(e.target.value)} />
-                            <TextField onBlur={handlePriceBlur} error={!isPriceValid && isPriceBlur}
+                            <TextField onBlur={handlePriceBlur} error={!isPriceValid && isPriceBlur} inputProps={{ min: 0 }}
                             label="Price" type="number" id="price" margin="normal"  onChange={(e) => handlePriceChange(parseInt(e.target.value))} />
-                            <TextField onBlur={handleMaxQBlur} error={!isMaxQValid && isMaxQBlur}
+                            <TextField onBlur={handleMaxQBlur} error={!isMaxQValid && isMaxQBlur} inputProps={{ min: 0 }}
                             label="Quantity" type="number" id="maxQuantity" margin="normal"  onChange={(e) => handleQuantityChange(e.target.value)} />
                         </Box>
                     </div>

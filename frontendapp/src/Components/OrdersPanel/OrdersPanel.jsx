@@ -48,6 +48,7 @@ export default function OrdersPanel() {
     } else {
       return;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInitial,user]);
   
   const handleUpdateOrders = () =>

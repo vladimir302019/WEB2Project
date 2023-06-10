@@ -35,10 +35,9 @@ namespace WebShop.Services
             }
 
             article = _mapper.Map<Article>(newArticle);
-            article = _mapper.Map<Article>(newArticle);
             using (var ms = new MemoryStream())
             {
-                newArticle.PhotoUrl.CopyTo(ms);
+                newArticle.FormFile.CopyTo(ms);
                 var fileBytes = ms.ToArray();
 
                 article.PhotoUrl = fileBytes;

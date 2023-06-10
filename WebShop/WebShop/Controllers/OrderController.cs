@@ -29,7 +29,7 @@ namespace WebShop.Controllers
 
         [HttpGet("get-order")]
         [Authorize]
-        public async Task<IActionResult> GetOrder([FromQuery] long id)
+        public async Task<IActionResult> GetOrder( long id)
         {
             return Ok(await _orderService.GetOrder(id));
         }
@@ -71,7 +71,7 @@ namespace WebShop.Controllers
 
         [HttpPut("cancel-order")]
         [Authorize(Roles = "BUYER")]
-        public async Task<IActionResult> CancelOrder([FromBody] long orderId)
+        public async Task<IActionResult> CancelOrder([FromForm] long orderId)
         {
             return Ok(await _orderService.CancelOrder(orderId));
         }

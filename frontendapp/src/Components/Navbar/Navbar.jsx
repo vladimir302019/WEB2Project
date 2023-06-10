@@ -72,28 +72,28 @@ const Navbar = () => {
   return (
     <AppBar position="static">
       <Toolbar>
-        <IconButton color="inherit">
-          <WidgetsIcon fontSize="large" onClick={handleMenuClick}/>
+        <IconButton color="inherit" onClick={handleMenuClick}>
+          <WidgetsIcon fontSize="large" />
         </IconButton>
         <div style={{ flex: 1 }} /> 
         <div style={{ display: "flex", justifyContent: "center" }}>
-        <IconButton color="inherit">
-          <AccountBoxIcon fontSize="large" onClick={handleProfileClick}/>
+        <IconButton color="inherit" onClick={handleProfileClick}>
+          <AccountBoxIcon fontSize="large" />
         </IconButton>
-        {!isSeller && <IconButton color="inherit">
-          <LocalMallIcon fontSize="large" onClick={handleStoreClick}/>
+        {!isSeller && <IconButton color="inherit" onClick={handleStoreClick}>
+          <LocalMallIcon fontSize="large" />
         </IconButton>}
-        {((isSeller && !isNotApprovedSeller) || isAdmin || isBuyer ) &&<IconButton color="inherit">
-          <Assignment fontSize="large" onClick={handleOrdersClick}/>
+        {((isSeller && !isNotApprovedSeller) || isAdmin || isBuyer ) &&<IconButton color="inherit" onClick={handleOrdersClick}>
+          <Assignment fontSize="large" />
         </IconButton>}
         {isSeller && !isNotApprovedSeller && !isBuyer && !isAdmin &&(
-        <IconButton color="inherit">
-          <PostAddIcon fontSize="large" onClick={handleSellerPanelClick}/>
+        <IconButton color="inherit" onClick={handleSellerPanelClick}>
+          <PostAddIcon fontSize="large" />
         </IconButton>
         )}
         {!isSeller && !isBuyer && isAdmin &&(
-        <IconButton color="inherit">
-          <AdminPanelSettingsIcon fontSize="large" onClick={handleAdminPanelClick}/>
+        <IconButton color="inherit" onClick={handleAdminPanelClick}>
+          <AdminPanelSettingsIcon fontSize="large" />
         </IconButton>
         )}
         </div>

@@ -154,6 +154,7 @@ const UpdateModal = ({ open, onClose, article}) => {
             type="number"
             defaultValue={article.price}
             error={!isPriceValid}
+            inputProps={{ min: 0 }}
             onChange={(e) => handlePriceChange(parseInt(e.target.value))}
             fullWidth
             margin="normal"
@@ -163,6 +164,7 @@ const UpdateModal = ({ open, onClose, article}) => {
             type="number"
             defaultValue={article.maxQuantity}
             error={!isMaxQValid}
+            inputProps={{ min: 0 }}
             onChange={(e) => handleQuantityChange(e.target.value)}
             fullWidth
             margin="normal"

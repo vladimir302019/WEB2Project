@@ -42,7 +42,7 @@ export default function Checkout() {
   useEffect(() => {
     if (orderDone) {
     setOrderId(localStorage.getItem("orderId"));
-    localStorage.setItem("orderid", 0);
+    localStorage.setItem("orderId", 0);
     }
   }, [orderDone]);
 
@@ -82,8 +82,10 @@ export default function Checkout() {
         })),
       }
       console.log(responseBody);
-      dispatch(addOrderItemsAction(responseBody));
+      dispatch(addOrderItemsAction(responseBody)).then(() => {dispatch(clearCart()); localStorage.removeItem("comment");});
+
     }else return;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   },[orderId]);
     const handleBack = () => {
       setActiveStep(activeStep - 1);

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import Grid from '@mui/material/Grid';
 import { getSellerArticlesAction, deleteArticleAction } from '../../Store/articleSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar/Navbar';
 import { Paper, Button, Avatar } from '@mui/material';
 import Table from '@mui/material/Table';
@@ -17,7 +16,6 @@ import NewArticleModal from './Modal/NewArticleModal';
 
 export default function SellerPanel() {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
     const articles = useSelector((state) => state.article.sellerArticles);
     const [isInitial, setIsInitial] = useState(true);
     const img = "data:image/*;base64,";
@@ -75,6 +73,7 @@ export default function SellerPanel() {
         };
        execute(); 
         setIsInitial(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isInitial]);
 
 

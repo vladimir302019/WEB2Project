@@ -8,12 +8,10 @@ import Container from '@mui/material/Container';
 import { TextField } from '@mui/material';
 import { getAllArticlesAction } from '../../Store/articleSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { addToCart } from '../../Store/cartSlice';
 
 export default function Products() {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
     const articles = useSelector((state) => state.article.allArticles.map(article => ({ ...article, quantity: 0 })));
     const [isInitial, setIsInitial] = useState(true);
     const [quantity, setQuantity] = useState({});
@@ -49,7 +47,7 @@ export default function Products() {
         
         execute();
         setIsInitial(false);
-
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [isInitial, articles]);
 
       if(isInitial){
@@ -102,7 +100,7 @@ export default function Products() {
                 onChange={(e) => setQuantity({ ...quantity, [article.id]: parseInt(e.target.value) })}
                 value={quantity[article.id] || 0}
               />
-              <Button variant="contained" size="medium" color="primary" onClick={() => handleAddArticle(article)} disabled={isAdmin}>
+              <Button variant="contained" size="medium" color="primary" onClick={() => handleAddArticle(article)} disabled={isAdmin || article.maxQuantity === 0}>
                 Add
               </Button>
             </div>

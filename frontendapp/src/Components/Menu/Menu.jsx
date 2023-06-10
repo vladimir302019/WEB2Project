@@ -64,7 +64,7 @@ const Menu = () => {
 
     execute();
     setIsInitial(false);
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInitial]);
 
   if (!user) {

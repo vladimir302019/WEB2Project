@@ -13,6 +13,6 @@ namespace WebShop.DTO.ArticleDTOs
         [Required]
         public int MaxQuantity { get; set; }
         [Required]
-        public IFormFile PhotoUrl { get; set; }
+        public IFormFile FormFile { get; set; }
     }
 }

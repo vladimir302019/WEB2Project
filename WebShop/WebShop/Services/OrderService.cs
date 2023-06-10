@@ -23,6 +23,7 @@ namespace WebShop.Services
         {
             var order = await _unitOfWork.OrderRepository.GetById(orderId);
             if (order == null) { throw new NotFoundException("Order doesn't exist."); }
+            order.OrderItems = await GetItemsForOrderId(orderId);
 
             List<Article> list = await _unitOfWork.ArticleRepository.GetAll();
 
@@ -203,6 +204,7 @@ namespace WebShop.Services
                         if (article.MaxQuantity >= item.Quantity)
                         {
                             article.MaxQuantity = article.MaxQuantity - item.Quantity;
+                            _unitOfWork.ArticleRepository.UpdateArticle(article);
                         }
                     }
                 }

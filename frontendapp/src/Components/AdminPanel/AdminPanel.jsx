@@ -6,14 +6,12 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Title from './Title/Title';
-import { useNavigate} from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '../Navbar/Navbar';
 import { getInactiveSellersAction, getActiveSellersAction, approveSellerAction } from '../../Store/adminSlice';
 
 export default function AdminPanel() {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
     const inactiveSellers = useSelector((state) => state.admin.inactiveSellers);
     const allSellers = useSelector((state) => state.admin.allSellers);
     const [isInitial, setIsInitial] = useState(true);
@@ -54,7 +52,7 @@ export default function AdminPanel() {
 
     execute();
     setIsInitial(false);
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInitial]);
 
   if(!inactiveSellers){

@@ -4,7 +4,7 @@ import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 const initialState = {
-    token: localStorage.getItem("token") !== null ? JSON.parse(localStorage.getItem("token")) : null,
+    token: localStorage.getItem("token") !== null ? localStorage.getItem("token") : null,
     isLoggedIn: localStorage.getItem("token") != null,
     user:  localStorage.getItem("user") !== null ? JSON.parse( localStorage.getItem("user")) : null,
     imageUrl: localStorage.getItem("imageUrl") !== null ? JSON.parse( localStorage.getItem("imageUrl")) : null,
@@ -118,6 +118,7 @@ const userSlice = createSlice({
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             localStorage.removeItem("imageUrl");
+            localStorage.clear();
         },
     },
     extraReducers: (builder) => {
@@ -179,7 +180,7 @@ const userSlice = createSlice({
               });
         });
         builder.addCase(updateUserAction.fulfilled, (state, action) => {
-            state.user.fullName = action.payload.fullname;
+            state.user.name = action.payload.name;
             state.user.address = action.payload.address;
             state.user.birthDate = action.payload.birthDate;
             state.user.email = action.payload.email;

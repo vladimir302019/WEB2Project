@@ -17,6 +17,7 @@ import { MenuItem } from '@mui/material';
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from 'react-redux';
 import { registerAction } from '../../Store/userSlice';
+import { toast } from 'react-toastify';
 const defaultTheme = createTheme();
 const userRoles = [ 'Buyer', 'Seller' ];
 
@@ -103,7 +104,7 @@ function Register(){
   useEffect(() => {
     if (selectedDate) {
       const localDateTime = new Date(selectedDate).toLocaleDateString();
-      setLocalDate(localDateTime);
+      setLocalDate(localDateTime ? localDateTime : "");
     }
 
     //navigate("/signin");
@@ -142,12 +143,20 @@ function Register(){
       username: data.get('username').toString().trim(),
       email: data.get('email').toString().trim(),
       password: data.get('password').toString().trim(),
-      birthdate: new Date(localDate.toString()).toISOString(),
+      birthdate: localDate ? new Date(localDate.toString()).toISOString() : "",
       address: data.get('address').toString().trim(),
       type: data.get('userrole').toString() === 'Buyer' ? 1 : 0,
     }
-
-    dispatch(registerAction(requestBody));
+    if(isFullNameValid && isUserRoleValid && isUsernameValid && isEmailValid && isPasswordValid && isAddressValid && localDate!== "") 
+      dispatch(registerAction(requestBody));
+    else{
+      toast.error("All fields must be filled!",{
+        position: "top-center",
+        autoClose: 2500,
+        closeOnClick: true,
+        pauseOnHover: false,
+      });
+    };
   };
 
   return (

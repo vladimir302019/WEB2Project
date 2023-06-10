@@ -38,7 +38,7 @@ namespace WebShop.Controllers
 
         [HttpPut("new-article")]
         [Authorize(Roles = "SELLER")]
-        public async Task<IActionResult> NewArticle([FromBody] ArticleDTO articleDTO)
+        public async Task<IActionResult> NewArticle([FromForm] ArticleDTO articleDTO)
         {
             return Ok(await _articleService.AddNewArticle(articleDTO, _userService.GetUserIdFromToken(User)));
         }
@@ -50,9 +50,9 @@ namespace WebShop.Controllers
             return Ok(await _articleService.UpdateArticle(articleDTO.Id, articleDTO));
         }
 
-        [HttpDelete("delete")]
+        [HttpPut("delete")]
         [Authorize(Roles = "SELLER")]
-        public async Task<IActionResult> DeleteArticle([FromBody] long id)
+        public async Task<IActionResult> DeleteArticle([FromForm] long id)
         {
             return Ok(await _articleService.DeleteArticle(id));
         }
@@ -67,12 +67,11 @@ namespace WebShop.Controllers
         [HttpPut("upload-image")]
         [Consumes("multipart/form-data")]
         [Authorize(Roles = "SELLER")]
-        public async Task<IActionResult> UploadImage(long id,IFormFile file)
+        public async Task<IActionResult> UploadImage([FromForm] ArticleUploadImageDTO article)
         {
-            await _articleService.UploadImage(id, file);
+            await _articleService.UploadImage(article.Id, article.File);
             return Ok();
         }
-
 
         [HttpGet("get-image")]
         [Authorize(Roles = "ADMIN, BUYER, SELLER")]
